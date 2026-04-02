@@ -34,11 +34,11 @@
 - [ ] Horizontal → vertical layout toggle
 - [ ] Mobile responsiveness
 - [ ] Extension popup with:
-  - [ ] Wallpaper picker (upload and persist)
+  - [x] Wallpaper picker (upload and persist) -> Solved (V1.1)
   - [ ] Per-VTuber channel filtering (show/hide)
   - [ ] Starred channels pinned to the top of the dashboard
   - [ ] Optional live preview on thumbnail hover (iframe)
-- [ ] Paginated/scrollable upcoming streams (currently capped at 5 visible)
+- [X] Paginated/scrollable upcoming streams (currently capped at 5 visible) -> Solved (V1.1)
 
 ## Stack
 
