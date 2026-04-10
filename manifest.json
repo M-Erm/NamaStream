@@ -1,16 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Streams Dashboard",
+  "name": "NamaStream",
   "author": "Erm",
-  "version": "1.0",
-  "description": "Creates a Dashbard on a New tab, allowing the user to see if the channels they are subscribed to are online",
-  "icons": {"32": "icon.png"},
+  "version": "1.2",
+  "description": "Adds a VTuber stream dashboard to your new tabs, showing live and scheduled YouTube streams.",
+  "icons": {
+    "32": "icon.png",
+    "48": "icon48.png",
+    "96": "icon96.png"
+  },
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "streams-dashboard@erm.dev",
+      "id": "NamaStream@erm.dev",
       "data_collection_permissions": {
-        "required": [],
+        "required": ["none"],
         "optional": []
       }
     }

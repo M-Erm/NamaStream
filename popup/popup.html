@@ -5,20 +5,76 @@
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <div id="popup-content">
-        <h1>New Tab Layout</h1>
-        <section id="vertical-container">
-            <section id="vertical-checkmarks">
-                <div id="checkbutton"><input type="checkbox" id="vertical-twitch" class="checkmark"><label for="vertical-twitch" class="buttontext">Vertical Twitch</label></div>
-            </section>
-            <section id="checkmarks">
-                <div id="checkbutton"><input type="checkbox" id="agenda" class="checkmark" checked><label for="agenda" class="buttontext">Agenda</label></div>
-                <div id="checkbutton"><input type="checkbox" id="twitch-streams" class="checkmark" checked><label for="twitch-streams" class="buttontext">Twitch Streams</label></div>
-                <div id="checkbutton"><input type="checkbox" id="youtube-streams" class="checkmark" checked><label for="agenda" class="buttontext">Youtube Streams</label></div>
-            </section>
+
+<div id="popup-content">
+
+    <header id="popup-header">
+        <button id="back-btn" class="icon-btn hidden">&#8592;</button>
+        <h1 id="popup-title">VTubers Dashboard</h1>
+        <button id="close-btn" class="icon-btn">&#10005;</button>
+    </header>
+
+    <div id="view-default" class="view active">
+
+        <section class="action-buttons">
+            <button class="action-btn" data-target="view-channels">Enable / Disable Channels</button>
+
+            <div class="toggle-row">
+                <span class="toggle-label">Sort by Branch</span>
+                <button class="toggle-btn" id="sort-by-branch" data-on="false">
+                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </button>
+            </div>
+
+            <button class="action-btn" data-target="view-layout">Layout Options</button>
         </section>
-        <div id="mid-line"></div>
+
+        <div class="divider"></div>
+
+        <section class="bar-toggles">
+            <label class="check-row"><input type="checkbox" id="agenda" checked><span>Agenda</span></label>
+            <label class="check-row"><input type="checkbox" id="youtube-streams" checked><span>Streams YT</span></label>
+            <label class="check-row"><input type="checkbox" id="twitch-streams" checked><span>Streams Twitch</span></label>
+        </section>
+
     </div>
-    <script src="popup.js"></script>
+
+    <div id="view-channels" class="view">
+
+        <section class="channel-section">
+            <h2 class="section-label">YouTube VTubers <span class="hint">Left click: toggle · Right click: pin</span></h2>
+            <div id="yt-channel-grid" class="channel-grid">
+            </div>
+        </section>
+
+        <section class="channel-section">
+            <h2 class="section-label">Twitch VTubers</h2>
+            <div id="tw-channel-grid" class="channel-grid">
+                <div class="channel-card disabled placeholder">
+                    <div class="ch-avatar"></div>
+                    <span class="ch-name">Coming soon</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="view-layout" class="view">
+
+        <section class="layout-options">
+            <label class="check-row"><input type="checkbox" id="layout-vertical-twitch"><span>Vertical Twitch</span></label>
+            <label class="check-row"><input type="checkbox" id="layout-agenda" checked><span>Agenda</span></label>
+            <label class="check-row"><input type="checkbox" id="layout-streams-yt" checked><span>Streams YT</span></label>
+            <label class="check-row"><input type="checkbox" id="layout-streams-twitch" checked><span>Streams Twitch</span></label>
+        </section>
+
+        <div class="layout-preview" id="layout-preview">
+        </div>
+
+    </div>
+
+</div>
+
+<script src="popup.js"></script>
 </body>
 </html>

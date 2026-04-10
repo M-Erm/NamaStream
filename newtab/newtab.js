@@ -5,6 +5,30 @@
 const youtube = document.getElementById('youtube').querySelector('.scroll-container'); //Precisa do queryselector para pegar a div interna
 const agenda = document.getElementById('agenda').querySelector('.scroll-container');
 
+const translations = {
+    "en": {
+        "watching_now": "Watching Now",
+        "hours": " hours",
+        "hour": " hour",
+        "in_1_minute": "in 1 minute",
+        "minutes": " minutes",
+        "in": "in ",
+        "starts": "Starts"
+    },
+    "pt-BR": {
+        "watching_now": "Assistindo agora",
+        "in": "em ",
+        "starts": "Começa",
+        "hours": " horas",
+        "hour": " hora",
+        "in_1_minute": "em 1 minuto",
+        "minutes": " minutos"
+    }
+};
+
+const userLanguage = navigator.language || 'en';
+const lang = translations[userLanguage] || translations['en'];
+
 let slots = [];
 let pendingFile = null;
 
@@ -59,6 +83,33 @@ function drag(scrollContainer)
 
 }
 
+function FilterStreams(videosResponse)
+{
+  const ScheduledStreams = [];
+  const HappeningStreams = [];
+
+  for (const response of videosResponse) {
+    for (const video of response.items) {
+      if (!video.liveStreamingDetails) {
+        // console.log("Not a stream")
+        continue;
+      }
+      if (video.liveStreamingDetails.actualStartTime && !video.liveStreamingDetails.actualEndTime) {
+        // console.log("Live NOW")
+        HappeningStreams.push(video);
+      } else if (video.liveStreamingDetails.scheduledStartTime && !video.liveStreamingDetails.actualStartTime) {
+        // console.log ("Upcoming Live")
+        ScheduledStreams.push(video);
+      }
+      // else {
+      //   console.log ("Past Live")
+      // }
+    }
+  } 
+
+  return {ScheduledStreams, HappeningStreams};
+}
+
 function renderUIs(HappeningStreams, ScheduledStreams)
 {
     let youtubeHTML = '';
@@ -83,7 +134,7 @@ function renderUIs(HappeningStreams, ScheduledStreams)
                         </div>
 
                         <a target="_blank" class="channelname" href="https://www.youtube.com/channel/${stream.snippet.channelId}"> ${stream.snippet.channelTitle} </a>
-                        <div style="color: white">${stream.liveStreamingDetails.concurrentViewers} assistindo agora </div>
+                        <div style="color: white">${stream.liveStreamingDetails.concurrentViewers} ${lang.watching_now} </div>
                     </div>
                 </div>`
                 
@@ -109,15 +160,15 @@ function renderUIs(HappeningStreams, ScheduledStreams)
             if (localStreamHoursLeft >= 24) {
                 displayText = localStreamDate; // Se > 24 horas, vira data
             } else if (localStreamHoursLeft > 1) {
-                displayText = "em " + localStreamHoursLeft.toLocaleString() + " horas";
+                displayText = lang.in + localStreamHoursLeft.toLocaleString() + lang.hours;
             } else if (localStreamHoursLeft === 1){
-                displayText = "em " + localStreamHoursLeft.toLocaleString() + " hora";
+                displayText = lang.in + localStreamHoursLeft.toLocaleString() + lang.hour;
             }else {
                 const localStreamMinutesLeft = Math.floor(localStreamTimeLeft * 60);
                 if (localStreamMinutesLeft === 1) {
-                    displayText = "em 1 minuto";
+                    displayText = lang.in_1_minute;
                 } else {
-                    displayText = "em " + localStreamMinutesLeft + " minutos";
+                    displayText = lang.in + localStreamMinutesLeft + lang.minutes;
                 }
             }
 
@@ -135,7 +186,7 @@ function renderUIs(HappeningStreams, ScheduledStreams)
                         </div>
 
                         <a target="_blank" class="channelname" href="https://www.youtube.com/channel/${stream.snippet.channelId}"> ${stream.snippet.channelTitle} </a>
-                        <div style="color: white"> Começa ${displayText} (${localStreamStartTime})</div>
+                        <div style="color: white"> ${lang.starts} ${displayText} (${localStreamStartTime})</div>
                     </div>
                 </div>`
 
@@ -148,28 +199,33 @@ function renderUIs(HappeningStreams, ScheduledStreams)
     agenda.innerHTML = agendaHTML;
 }
 
-
 async function loadStreams() 
 {
     try {
-    const response = await fetch("https://holo-streams.migueloliv-dev.workers.dev/streams");
-    const data = await response.json(); // { ScheduledStreams, HappeningStreams }
-    renderUIs(data.HappeningStreams, data.ScheduledStreams);
-    drag(youtube);
-    drag(agenda);
+        console.time('fetch total');
+        const response = await fetch("http://127.0.0.1:8787/streams");
+        console.timeEnd('fetch total');
+        const videosResponse = await response.json();
+        const data = FilterStreams(videosResponse);
+        console.time('render');
+        renderUIs(data.HappeningStreams, data.ScheduledStreams);
+        console.timeEnd('render');
+        drag(youtube);
+        drag(agenda);
     } catch (err) {
-    console.error("Erro ao carregar streams:", err);
+        console.error("Erro ao carregar streams:", err);
     }
 }
 
 loadStreams();
 
+
 document.addEventListener('DOMContentLoaded', async () => {
-    const result = await chrome.storage.local.get('wallpapers');
-    slots = result.wallpapers || [];
+    const result = await chrome.storage.local.get('wallpapers'); // Pega os wallpapers na cache
+    slots = result.wallpapers || []; // Se não tiver, inicia vazio
  
     if (slots.length === 0) {
-        slots = [{ type: 'url', data: '/logo/DefaultBackground.png' }];
+        slots = [{ type: 'url', data: '/logo/DefaultBackground.png' }]; // wallpaper padrão
         await chrome.storage.local.set({ wallpapers: slots });
     }
  
@@ -190,7 +246,7 @@ function renderSlots() {
     slotEls.forEach((el, index) => {
         const slot = slots[index];
  
-        if (slot) {
+        if (slot) { // Se tiver index(wallpaper), renderiza. Se não, deixa vazio
             el.style.backgroundImage = `url(${slot.data})`;
             el.classList.remove('empty');
         } else {
@@ -200,18 +256,19 @@ function renderSlots() {
     });
 }
 
-function bindSlotClicks() {
+function bindSlotClicks() { // Adiciona evento de click em cada slot para escolher wallpaper
     const slotEls = document.querySelectorAll('.slot');
  
     slotEls.forEach((el) => {
         el.addEventListener('click', async () => {
+
             const index = parseInt(el.dataset.index);
-            if (!slots[index]) return; // slot vazio, não faz nada
+            if (!slots[index]) return; // if slot vazio
  
             const chosen = slots.splice(index, 1)[0]; // remove de onde estava
-            slots.unshift(chosen);                    // coloca na frente
+            slots.unshift(chosen); // coloca na frente
  
-            await chrome.storage.local.set({ wallpapers: slots });
+            await chrome.storage.local.set({ wallpapers: slots }); // Salva a nova ORDEM na cache
  
             document.querySelectorAll('.slot').forEach(s => s.classList.remove('active')); // Atualiza qual slot tem a borda ativa
             document.querySelector('.slot[data-index="0"]').classList.add('active');
@@ -258,30 +315,30 @@ document.getElementById('file-set-btn').addEventListener('click', () => {
     });
 });
  
-function compressImage(file, callback) {
+function compressImage(file, callback) { 
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d'); // Contexto para desenhar a imagem no canvas e depois extrair o base64 comprimido
     const img = new Image();
  
     img.onload = () => {
         const maxWidth = 1920;
-        const scale = Math.min(1, maxWidth / img.width);
-        canvas.width  = img.width  * scale;
-        canvas.height = img.height * scale;
+        const scale = Math.min(1, maxWidth / img.width); // Se a imagem for maior que 1920px, reduz. Se for menor, mantém o tamanho original
+        canvas.width  = img.width  * scale; 
+        canvas.height = img.height * scale; 
  
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // 0 e 0 são as coordenadas de onde começa o desenho.
  
-        const base64 = canvas.toDataURL('image/jpeg', 0.85);
+        const base64 = canvas.toDataURL('image/jpeg', 0.85); // Comprime a imagem para JPEG com qualidade de 85%
         callback(base64);
-        URL.revokeObjectURL(img.src); // libera memória
+        URL.revokeObjectURL(img.src); // Libera a memória usada para o objeto URL criado para a imagem, já que não é mais necessário após o carregamento e compressão.
     };
  
     img.src = URL.createObjectURL(file);
 }
 
 async function saveWallpaper(wallpaper) {
-    slots = [wallpaper, ...slots].slice(0, 3);
-    await chrome.storage.local.set({ wallpapers: slots });
+    slots = [wallpaper, ...slots].slice(0, 3); // Slice faz com que só tenha 3 wallpapers, removendo o mais antigo se passar disso
+    await chrome.storage.local.set({ wallpapers: slots }); // Salva o WALLPAPER na cache
     renderSlots();
 
     document.documentElement.style.setProperty('--wallpaper-url', `url(${wallpaper.data})`);
