@@ -4,6 +4,7 @@
 
 const youtube = document.getElementById('youtube').querySelector('.scroll-container'); //Precisa do queryselector para pegar a div interna
 const agenda = document.getElementById('agenda').querySelector('.scroll-container');
+const twitch = document.getElementById('twitch').querySelector('.scroll-container');
 
 const translations = {
     "en": {
@@ -83,37 +84,52 @@ function drag(scrollContainer)
 
 }
 
-function FilterStreams(videosResponse)
+function FilterStreams(videosResponse, twitchResponse)
 {
-  const ScheduledStreams = [];
-  const HappeningStreams = [];
+    const ScheduledStreams = [];
+    const HappeningStreams = [];
+    const TwitchStreams = [];
+    let disabledChannels = new Set();
+    let pinnedChannels = [];
 
-  for (const response of videosResponse) {
-    for (const video of response.items) {
-      if (!video.liveStreamingDetails) {
-        // console.log("Not a stream")
-        continue;
-      }
-      if (video.liveStreamingDetails.actualStartTime && !video.liveStreamingDetails.actualEndTime) {
-        // console.log("Live NOW")
-        HappeningStreams.push(video);
-      } else if (video.liveStreamingDetails.scheduledStartTime && !video.liveStreamingDetails.actualStartTime) {
-        // console.log ("Upcoming Live")
-        ScheduledStreams.push(video);
-      }
-      // else {
-      //   console.log ("Past Live")
-      // }
+  // Pega os canais desativados e fixados do storage
+    chrome.storage.local.get(['disabledChannels', 'pinnedChannels'], (result) => {
+        disabledChannels = new Set(result.disabledChannels || []);
+        pinnedChannels = result.pinnedChannels || [];
+    });
+
+    console.log("desabilitados:" + disabledChannels);
+    console.log("fixados:" + pinnedChannels);
+
+    for (const response of videosResponse) {
+        for (const video of response.items) {
+            if (!video.liveStreamingDetails) {
+                // Not a stream
+                continue;
+            }
+            if (video.liveStreamingDetails.actualStartTime && !video.liveStreamingDetails.actualEndTime) {
+                // Live NOW
+                HappeningStreams.push(video);
+            } else if (video.liveStreamingDetails.scheduledStartTime && !video.liveStreamingDetails.actualStartTime) {
+                // Upcoming Live
+                ScheduledStreams.push(video);
+            }
+            // else = Past Live
+        }
+    } 
+
+    for (const response of twitchResponse.data) {
+        TwitchStreams.push(response);
     }
-  } 
 
-  return {ScheduledStreams, HappeningStreams};
+    return {ScheduledStreams, HappeningStreams, TwitchStreams};
 }
 
-function renderUIs(HappeningStreams, ScheduledStreams)
+function renderUIs(HappeningStreams, ScheduledStreams, TwitchStreams)
 {
     let youtubeHTML = '';
     let agendaHTML = '';
+    let twitchHTML = '';
 
     ScheduledStreams.sort((a, b) => {
         return new Date(a.liveStreamingDetails.scheduledStartTime) - 
@@ -125,10 +141,9 @@ function renderUIs(HappeningStreams, ScheduledStreams)
             youtubeHTML += `
                 <div class="live"> 
                     <a href="https://www.youtube.com/watch?v=${stream.id}" target="_blank" class="live-thumb">
-                        <img src="${stream.snippet.thumbnails.maxres.url}" alt="Channel Pfp"> 
+                        <img src="${stream.snippet.thumbnails.maxres?.url || stream.snippet.thumbnails.high.url} " alt="Channel Pfp"> 
                     </a>
                     <div class="live-info">
-
                         <div>
                             <a target="_blank" class="streamtitle" href="https://www.youtube.com/watch?v=${stream.id}">${stream.snippet.title}</a>
                         </div>
@@ -141,7 +156,7 @@ function renderUIs(HappeningStreams, ScheduledStreams)
         } catch (err) {
             console.log(err);
         }
-        });
+    });
 
     ScheduledStreams.forEach(stream => {
         try {
@@ -177,10 +192,9 @@ function renderUIs(HappeningStreams, ScheduledStreams)
             agendaHTML += `
                 <div class="live"> 
                     <a href="https://www.youtube.com/watch?v=${stream.id}" target="_blank" class="live-thumb">
-                        <img src="${stream.snippet.thumbnails.maxres.url}" alt="Channel Pfp"> 
+                        <img src="${stream.snippet.thumbnails.maxres.url ?? stream.snippet.thumbnails.default}" alt="Channel Pfp"> 
                     </a>
                     <div class="live-info">
-
                         <div>
                             <a target="_blank" class="streamtitle" href="https://www.youtube.com/watch?v=${stream.id}">${stream.snippet.title}</a>
                         </div>
@@ -189,27 +203,49 @@ function renderUIs(HappeningStreams, ScheduledStreams)
                         <div style="color: white"> ${lang.starts} ${displayText} (${localStreamStartTime})</div>
                     </div>
                 </div>`
-
         } catch (err) {
             console.log(err);
         }
     });
 
+    TwitchStreams.forEach(stream => {
+    try {
+        twitchHTML += `
+            <div class="live"> 
+                <a href="https://www.twitch.tv/${stream.user_name}" target="_blank" class="live-thumb">
+                    <img src="${stream.thumbnail_url.replace("{width}", "320").replace("{height}", "180")}" alt="Channel Pfp"> 
+                </a>
+                <div class="live-info">
+                    <div>
+                        <a target="_blank" class="streamtitle" href="https://www.twitch.tv/${stream.user_name}">${stream.title}</a>
+                </div>
+
+                    <a target="_blank" class="channelname" href="https://www.twitch.tv/${stream.user_name}"> ${stream.user_name} </a>
+                    <div style="color: white">${stream.viewer_count} ${lang.watching_now} </div>
+                </div>
+            </div>`
+    } catch (err) {
+        console.log(err);
+    }
+})
+
     youtube.innerHTML = youtubeHTML;
     agenda.innerHTML = agendaHTML;
+    twitch.innerHTML = twitchHTML;
 }
 
 async function loadStreams() 
 {
     try {
-        console.time('fetch total');
-        const response = await fetch("http://127.0.0.1:8787/streams");
-        console.timeEnd('fetch total');
+        console.time('Tempo de Resposta');
+        const response = await fetch("https://holo-streams.migueloliv-dev.workers.dev/v2/youtube");
+        const twitchRes = await fetch("https://holo-streams.migueloliv-dev.workers.dev/v2/twitch");
+        console.timeEnd('Tempo de Resposta');
+
         const videosResponse = await response.json();
-        const data = FilterStreams(videosResponse);
-        console.time('render');
-        renderUIs(data.HappeningStreams, data.ScheduledStreams);
-        console.timeEnd('render');
+        const twitchResponse = await twitchRes.json();
+        const data = FilterStreams(videosResponse, twitchResponse);
+        renderUIs(data.HappeningStreams, data.ScheduledStreams, data.TwitchStreams);
         drag(youtube);
         drag(agenda);
     } catch (err) {

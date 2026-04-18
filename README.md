@@ -20,7 +20,7 @@
 - **Active streams panel** — Shows all VTubers currently live on YouTube with thumbnails, titles, and viewer counts
 - **Upcoming streams panel** — Scheduled streams with start times, sorted chronologically
 - **Custom new tab page** — Takes over Firefox's new tab with a full-screen dashboard
-- **Wallpaper support** *(planned)* — Set and save custom backgrounds via the extension popup
+- **Wallpaper support** — Set and save custom backgrounds via the extension popup
 
 ### Architecture highlights
 - Backend runs on **Cloudflare Workers** (Hono + TypeScript) — zero cold-start latency on the free plan
@@ -30,15 +30,15 @@
 
 ## Roadmap
 
-- [ ] Twitch live stream support
-- [ ] Horizontal → vertical layout toggle
+- [X] Twitch live stream support -> Solved (V1.21)
+- [X] Horizontal → vertical layout toggle -> Solved (V1.21)
 - [ ] Mobile responsiveness
 - [ ] Extension popup with:
   - [x] Wallpaper picker (upload and persist) -> Solved (V1.1)
-  - [ ] Per-VTuber channel filtering (show/hide)
-  - [ ] Starred channels pinned to the top of the dashboard
+  - [X] Per-VTuber channel filtering (show/hide) -> Solved (V1.21)
+  - [X] Starred channels pinned to the top of the dashboard -> Solved (V1.21)
   - [ ] Optional live preview on thumbnail hover (iframe)
-- [X] Paginated/scrollable upcoming streams (currently capped at 5 visible) -> Solved (V1.1)
+- [X] Paginated/scrollable upcoming streams -> Solved (V1.1)
 
 ## Stack
 
@@ -62,15 +62,17 @@
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/namastream.git
+git clone https://github.com/M-Erm/NamaStream.git
 cd namastream
 
 # Install backend dependencies
 cd worker
 npm install
 
-# Set your YouTube API key as a Wrangler secret (never commit it to the repo)
+# Set your YouTube API key and Twitch Client Secret as Wrangler secrets
 wrangler secret put YOUTUBE_API_KEY
+wrangler secret put Client_Id #Optional
+wrangler secret put Client_Secret
 ```
 
 ### Running locally
@@ -90,7 +92,7 @@ To load the extension in Firefox:
 
 ```
 namastream/
-├── manifest.json          # Extension manifest (MV2)
+├── manifest.json          # Extension manifest (MV3)
 ├── newtab/
 │   ├── index.html
 │   ├── style.css
@@ -98,9 +100,13 @@ namastream/
 ├── popup/
 │   ├── popup.html
 │   └── popup.js
-└── worker/                # Cloudflare Workers backend
+└── API/                # Cloudflare Workers backend
     ├── src/
-    │   └── index.ts       # Hono routes + chunked YouTube API fetching
+    │   └── index.ts       # Hono routes
+    │   └── youtubeService.js  # Youtube API
+    │   └── twitchService.js   # Twitch API
+    │   └── old.js             # Old API Functions
+    │   └── cache.js           # Cache Backend System  
     ├── wrangler.toml
     └── package.json
 ```

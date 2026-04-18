@@ -1,6 +1,6 @@
-// ===========================================
+// 
 // Quando informação for alterada no popup, salva a informação do DB da API Chrome.Storage (local)
-// ===========================================
+// 
 
 const channelIDs = [
   {name: "Dokibird", channelId: "UComInW10MkHJs-_vi4rHQCQ"},
@@ -38,12 +38,12 @@ const channelIDs = [
   {name: "Ollie", channelId: "UCYz_5n-uDuChHtLo7My1HnQ"},
 ];
 
-let disabledChannels = new Set();
-let pinnedChannels   = [];
+let disabledChannels;
+let pinnedChannels;
 
-const views   = document.querySelectorAll('.view');
+const views = document.querySelectorAll('.view');
 const backBtn = document.getElementById('back-btn');
-const title   = document.getElementById('popup-title');
+const title = document.getElementById('popup-title');
 
 const viewTitles = {
     'view-default':  'VTubers Dashboard',
@@ -51,37 +51,22 @@ const viewTitles = {
     'view-layout':   'Layout',
 };
 
-function showView(viewId) {
-    views.forEach(v => v.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
+document.querySelectorAll('#view-default .check-row input').forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        chrome.storage.local.set({ [checkbox.id]: checkbox.checked });
+        changeRowVisibility();
+    });
+});
 
-    title.textContent = viewTitles[viewId];
-
-    backBtn.classList.toggle('hidden', viewId === 'view-default'); // Mostra seta de voltar em qualquer view que não seja a padrão
+function changeRowVisibility() {
+    // TODO: Troca a visibilidade da row no HTML
 }
 
-document.querySelectorAll('.action-btn[data-target]').forEach(btn => {
-    btn.addEventListener('click', () => showView(btn.dataset.target));
-});
+// ============ GRID CANAIS ===================================================================================================================================
 
-
-backBtn.addEventListener('click', () => showView('view-default'));
-document.getElementById('close-btn').addEventListener('click', () => window.close());
-
-
-const sortToggle = document.getElementById('sort-by-branch');
-sortToggle.addEventListener('click', () => {
-    const isOn = sortToggle.dataset.on === 'true';
-    sortToggle.dataset.on = String(!isOn);
-    // TODO: salvar no chrome.storage e aplicar na newtab
-});
-
-document.querySelectorAll('#view-default .check-row input').forEach(cb => {
-    cb.addEventListener('change', () => {
-        // TODO: salvar no chrome.storage
-        // Estrutura: chrome.storage.local.set({ [cb.id]: cb.checked })
-        console.log(`${cb.id} →`, cb.checked);
-    });
+chrome.storage.local.get(['disabledChannels', 'pinnedChannels'], (result) => {
+    disabledChannels = new Set(result.disabledChannels || []);
+    pinnedChannels = result.pinnedChannels || [];
 });
 
 function renderChannelGrid() {
@@ -118,7 +103,7 @@ function renderChannelGrid() {
                 disabledChannels.add(channel.channelId);
             }
             renderChannelGrid();
-            // TODO: persistir no chrome.storage
+            chrome.storage.local.set({ disabledChannels: Array.from(disabledChannels) });
         });
 
         card.addEventListener('contextmenu', (e) => { // Clique direito → toggle pin
@@ -130,13 +115,23 @@ function renderChannelGrid() {
                 pinnedChannels.push(channel.channelId); // adiciona no fim
             }
             renderChannelGrid();
-            // TODO: persistir no chrome.storage
+            chrome.storage.local.set({ pinnedChannels });
         });
 
         grid.appendChild(card);
     });
 }
 
+// ============ SORT BY BRANCH ================================================================================================================================
+
+const sortToggle = document.getElementById('sort-by-branch');
+sortToggle.addEventListener('click', () => {
+    const isOn = sortToggle.dataset.on === 'true';
+    sortToggle.dataset.on = String(!isOn);
+    // TODO: salvar no chrome.storage e aplicar na newtab
+});
+
+// ============ OPÇÕES DE LAYOUT ==============================================================================================================================
 
 const layoutCheckboxes = document.querySelectorAll('#view-layout .check-row input');
 
@@ -147,32 +142,51 @@ const previewLabels = {
     'layout-vertical-twitch': 'Vertical Twitch',
 };
 
-function updateLayoutPreview() {
+function changeLayoutPreview() {
     const preview = document.getElementById('layout-preview');
     preview.innerHTML = '';
 
-    layoutCheckboxes.forEach(cb => {
-        if (!cb.checked) return;
+    layoutCheckboxes.forEach(checkbox => {
+        if (!checkbox.checked) return;
 
         const block = document.createElement('div');
         block.className = 'preview-block';
-        if (cb.id === 'layout-vertical-twitch') block.classList.add('preview-vertical');
-        block.textContent = previewLabels[cb.id];
+        if (checkbox.id === 'layout-vertical-twitch') block.classList.add('preview-vertical');
+        block.textContent = previewLabels[checkbox.id];
         preview.appendChild(block);
     });
 
     if (preview.children.length === 0) {
-        preview.innerHTML = '<span style="color:var(--text-dim);font-size:11px;margin:auto">Nenhum elemento ativo</span>';
+        preview.innerHTML = '<span style="color:var(--text-dim); font-size:11px; margin:auto"> Nenhum elemento ativo</span>';
     }
 }
 
-layoutCheckboxes.forEach(cb => {
-    cb.addEventListener('change', updateLayoutPreview);
+layoutCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', changeLayoutPreview);
 });
 
+// ============ PADRÃO DO POPUP ===============================================================================================================================
+
+function renderPage(viewId) {
+    views.forEach(view => view.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+
+    title.textContent = viewTitles[viewId];
+
+    backBtn.classList.toggle('hidden', viewId === 'view-default');
+}
+
+document.querySelectorAll('.action-btn[data-target]').forEach(btn => {
+    btn.addEventListener('click', () => renderPage(btn.dataset.target));
+});
+
+backBtn.addEventListener('click', () => renderPage('view-default'));
+document.getElementById('close-btn').addEventListener('click', () => window.close());
+
 document.addEventListener('DOMContentLoaded', () => {
-    showView('view-default');
+
+    renderPage('view-default');
     renderChannelGrid();
-    updateLayoutPreview();
-    // TODO: carregar estado salvo do chrome.storage e aplicar nos checkboxes, disabledChannels, pinnedChannels
+    changeLayoutPreview();
+
 });

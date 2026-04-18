@@ -1,6 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+* {
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0;
+ }
 
 :root {
     --accent:        rgb(122, 141, 248);
@@ -63,7 +67,6 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    transition: color 0.15s, background 0.15s;
 }
 .icon-btn:hover { color: var(--text); background: var(--surface-2); }
 
@@ -85,7 +88,6 @@ body {
     padding: 9px 12px;
     text-align: left;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
 }
 .action-btn:hover {
     background: var(--surface-2);
@@ -121,14 +123,12 @@ body {
     display: flex;
     align-items: center;
     padding: 2px;
-    transition: background 0.2s, border-color 0.2s;
 }
 .toggle-thumb {
     width: 14px;
     height: 14px;
     background: var(--text-dim);
     border-radius: 50%;
-    transition: transform 0.2s, background 0.2s;
 }
 .toggle-btn[data-on="true"] .toggle-track {
     background: var(--accent-dim);
@@ -154,7 +154,6 @@ body {
     padding: 7px 8px;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.12s;
 }
 .check-row:hover { background: var(--surface); }
 .check-row input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
@@ -209,7 +208,6 @@ body {
     background: var(--surface);
     cursor: pointer;
     position: relative;
-    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
 .channel-card:hover { background: var(--surface-2); border-color: var(--accent-border); }
 
@@ -284,7 +282,6 @@ body {
     font-size: 10px;
     color: var(--accent);
     font-weight: 500;
-    transition: opacity 0.2s;
 }
 .preview-block.preview-vertical {
     width: 60px;
