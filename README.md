@@ -66,6 +66,16 @@ Scrollable Bars
 - Popup Layout Section Rework
 - General Popup UI Changes
 
+### 1.23
+
+- Fix Disabled Channels Var
+
+### 1.3
+
+- Geo-Meteor API (Weather)
+- Resizable Bar Option
+- Movable Bar Option
+
 ## Stack
 
 | Layer | Tech |

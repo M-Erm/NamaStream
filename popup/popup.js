@@ -36,6 +36,7 @@ const channelIDs = [
   {name: "Raora", channelId: "UCl69AEx4MdqMZH7Jtsm7Tig"},
   {name: "Fuwamoco", channelId: "UCt9H_RpQzhxzlyBxFqrdHqA"},
   {name: "Ollie", channelId: "UCYz_5n-uDuChHtLo7My1HnQ"},
+  {name: "Shachi", channelId: "UCuBEdI-24bquMoP_dACignQ"}
 ];
 
 let disabledChannels = new Set();
@@ -46,7 +47,7 @@ const backBtn = document.getElementById('back-btn');
 const title = document.getElementById('popup-title');
 
 const viewTitles = {
-    'view-default':  'VTubers Dashboard',
+    'view-default':  'NamaStream Settings',
     'view-channels': 'Channels',
     'view-layout':   'Layout',
 };

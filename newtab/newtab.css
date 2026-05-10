@@ -3,7 +3,6 @@
     --wallpaper-url: url("/logo/DefaultBackground.png");
 }
 
-
 html, body {
     width: 100%;
     height: 100%;
@@ -24,17 +23,17 @@ main {
     padding-block-start: calc(calc(8 * 0.267rem) * 4);
 }
 
-.weather {
+#weather {
     inset-inline-end: calc(8 * 0.267rem);
     font-size: inherit;
     display: inline-block;
     position: absolute;
     inset-block-start: calc(8 * 0.267rem);
     margin-block-start: 0;
-    z-index: 1;
+    z-index: 100;
 }
 
-.weather-bar {
+#weather-bar {
     min-height: 55px;
     margin-block-end: 0.267rem;
     display: flex;
@@ -43,34 +42,235 @@ main {
     border-radius: 8px;
 }
 
-.weatherinfo {
-    display: flex;
-    gap: calc(3 * 0.267rem);
-    padding: calc(2 * 0.267rem);
-
-    border-radius: 8px;
-
-    min-width: 130px;
-    max-width: 190px;
-    background-color: #42414d;
-    cursor: pointer;
-}
-
-.weatherIconCol {
+#weatherIconCol {
     display: flex;
     align-items: center;
     justify-content: center;
     align-self: center;
     width: 32px;
     height: 32px;
+    flex-shrink: 0;
     aspect-ratio: 1;
 }
 
-.weatherIcon {
+#weatherIcon {
     width: 32px;
     height: auto;
     content: url("chrome://browser/skin/weather/night-clear.svg");
     box-sizing: inherit;
+}
+
+#weatherinfo {
+    display: flex;
+    position: relative;
+    align-items: center;
+    gap: calc(3 * 0.267rem);
+    padding: calc(2 * 0.267rem);
+    border-radius: 8px;
+    min-width: 130px;
+    max-width: 190px;
+    background-color: #42414d;
+
+    transition: max-width 0.2s ease, transform 0.2s ease;
+}
+
+#weatherinfo:not(.settings-open):hover {
+    max-width: 280px;
+    transform: scale(1.02);
+}
+
+#weatherinfo.settings-open {
+    max-width: 240px;
+    align-items: flex-start;
+    min-height: 160px;
+}
+
+#weatherText {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    color: white;
+    overflow: hidden;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+#weatherTemp {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+#weatherLocation {
+    font-size: 12px;
+    line-height: 1.1;
+}
+
+#weatherExtra {
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    overflow: hidden;
+    max-height: 0;
+    transition: opacity 0.2s ease, max-height 0.25s ease, margin-top 0.2s ease;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+#weatherinfo:not(.settings-open):hover #weatherExtra {
+    opacity: 1;
+    max-height: 80px;
+    margin-top: 6px;
+}
+
+#weatherMenu {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 0;
+    transition: background-color 0.15s ease;
+}
+
+#weatherMenu:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+#weatherSettings {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    inset: 0;
+    padding: 10px;
+    gap: 6px;
+    background-color: #42414d;
+    border-radius: 8px;
+    color: white;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(12px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    overflow: visible;
+}
+
+#weatherinfo.settings-open #weatherSettings {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+#weatherinfo.settings-open #weatherText,
+#weatherinfo.settings-open #weatherIconCol {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-8px);
+}
+
+#weatherSettingsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2px;
+}
+
+#weatherCloseSettings {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    font-size: 13px;
+    transition: background-color 0.15s ease;
+}
+
+#weatherCloseSettings:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+#weatherLocationInput {
+    border: none;
+    outline: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#weatherDropdown {
+    position: absolute; 
+    top: calc(100% + 4px); 
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 140px;
+    background-color: #42414d;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
+    padding: 4px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+#weatherDropdown:empty {
+    display: none;
+}
+
+.weather-option {
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 12px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.weather-option:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+#weatherSettingsActions {
+    display: flex;
+    gap: 6px;
+}
+
+#weatherSettingsActions button {
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.08);
+    min-width: 60px;
+    color: white;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background-color 0.15s ease;
+}
+
+#weatherSettingsActions button:hover {
+    background: rgba(255, 255, 255, 0.16);
 }
 
 #search-wrapper {
@@ -238,15 +438,14 @@ main {
 }
 
 .modal-card {
+    display: flex;
+    flex-direction: column;
     width: min(700px, 70vw);
     aspect-ratio: 16 / 9;
     background: #13131a;
     border: 1px solid rgb(250, 72, 72);
     border-radius: 16px;
     padding: 2vh 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
     position: relative;
 }
 
@@ -263,19 +462,23 @@ main {
     flex-direction: row;
     gap: 10px;
     width: 320px;
-}
-.slot {
-    display: flex;
-    width: 200px;
-    height: auto;
-    aspect-ratio: 16/9;
-    object-fit: fill;
+    max-width: 50vw;
 }
 
-.slot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.slot {
+    display: flex;
+    width: clamp(280px, 20vw, 500px);
+    height: auto;
+    aspect-ratio: 16/9;
+}
+
+.slot-label {
+    color: white;
+    font-weight: bold;
+    text-shadow: -1px -1px 0 black,  
+                 1px -1px 0 black,
+                -1px 1px 0 black,
+                 1px 1px 0 black;
 }
 
 #changewallpaper {
@@ -324,15 +527,19 @@ button:hover {
 }
 
 #file-input {
+    font-size: 2rem;
     background-color: white;
 }
 
 #file-name {
     color: white;
     text-align: center;
+    font-size: 1.25rem;
+    font-weight: bold;
 }
+
 .action-btn {
-    width: 55px;
+    inline-size: max-content;
     background-color: white;
     color: black;
 }

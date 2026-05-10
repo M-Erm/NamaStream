@@ -6,18 +6,32 @@ const firefox_el = document.getElementById('firefox-image-wordmark');
 const firefox_logo = firefox_el.querySelector('.image');
 const firefox_wordmark = firefox_el.querySelector('.wordmark');
 
+const weatherInfo = document.getElementById("weatherinfo");
+const weatherMenu = document.getElementById("weatherMenu");
+const input = document.getElementById("weatherLocationInput");
+const dropdown = document.getElementById("weatherDropdown");
+let debounceTimeout;
+
 const search_bar = document.getElementById('search-bar').querySelector('input'); // Para desabilitar/habilitar
 
 const youtube = document.getElementById('youtube').querySelector('.scroll-container'); //Precisa do queryselector para pegar a div interna
 const agenda = document.getElementById('agenda').querySelector('.scroll-container'); // Para rolagem
 const twitch = document.getElementById('twitch').querySelector('.scroll-container');
 
+const weatherMap = {
+  0: "☀️ Céu limpo",
+  1: "🌤️ Parcialmente limpo",
+  2: "⛅ Nublado",
+  3: "☁️ Muito nublado",
+  61: "🌧️ Chuvendo",
+  95: "⛈️ Tempestade"
+};
+
 const bars = [
     document.getElementById('youtube'),
     document.getElementById('agenda'), // Para desabilitar/habilitar
     document.getElementById('twitch')
 ]
-
 
 const translations = {
     "en": {
@@ -103,13 +117,12 @@ async function filterStreams(videosResponse, twitchResponse)
     const HappeningStreams = [];
     const TwitchStreams = [];
 
-    const { disabledChannels, pinnedChannels } = await chrome.storage.local.get(['disabledChannels', 'pinnedChannels']);
-
+    const { disabledChannels = [], pinnedChannels = [] } = await chrome.storage.local.get(['disabledChannels', 'pinnedChannels']);
 
     for (const response of videosResponse) {
         for (const video of response.items) {
 
-            if (disabledChannels.includes(video.snippet.channelId)) {
+            if (disabledChannels.includes(video.snippet?.channelId)) {
                 continue;
             }
 
@@ -153,11 +166,13 @@ async function filterStreams(videosResponse, twitchResponse)
     return {ScheduledStreams, HappeningStreams, TwitchStreams};
 }
 
-function renderUIs(HappeningStreams, ScheduledStreams, TwitchStreams)
+function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
 {
     let youtubeHTML = '';
     let agendaHTML = '';
     let twitchHTML = '';
+
+
 
     chrome.storage.local.get(['layout-firefox-logo', 'layout-firefox-wordmark', 'layout-search-bar'], (result) => {
         firefox_logo.classList.toggle('hidden', result['layout-firefox-logo'] === false);
@@ -291,15 +306,98 @@ function renderUIs(HappeningStreams, ScheduledStreams, TwitchStreams)
     agenda.innerHTML = agendaHTML;
     twitch.innerHTML = twitchHTML;
 }
+
+function renderWeather(weatherData, geoData, manualName = null) 
+{
+    const current = weatherData.current;
+
+const place = manualName || (geoData?.address?.city || geoData?.address?.town || geoData?.address?.village || geoData?.address?.municipality || geoData?.address?.county || "Local desconhecido") + (geoData?.address?.state ? `, ${geoData.address.state}` : "");
+
+
+    document.getElementById("weatherTemp").textContent =`${Math.round(current.temperature_2m)}°`;
+    document.getElementById("weatherLocation").textContent = place;
+    document.getElementById("weatherFeels").textContent = `Sensação: ${Math.round(current.apparent_temperature)}°`;
+    document.getElementById("weatherHumidity").textContent = `Umidade: ${current.relative_humidity_2m}%`;
+    document.getElementById("weatherWind").textContent = `Vento: ${Math.round(current.wind_speed_10m)} km/h`;
+    setWeatherIcon(current.weather_code);
+}
+
+function renderDropdown(results) 
+{
+
+    const dropdown = document.getElementById("weatherDropdown");
+
+    dropdown.innerHTML = "";
+
+    results.forEach((place) => {
+
+        const div = document.createElement("div");
+        div.className = "weather-option";
+
+        const label =
+            `${place.name}` +
+            (place.admin1 ? `, ${place.admin1}` : "") +
+            (place.country ? `, ${place.country}` : "");
+
+        div.textContent = label;
+
+        div.addEventListener("click", () => {
+            dropdown.innerHTML = "";
+            document.getElementById("weatherLocationInput").value = label;
+
+            chrome.storage.local.set({
+                weatherMode: "manual",
+                lat: place.latitude,
+                lon: place.longitude,
+                name: place.name
+            });
+
+            fetchWeatherFromCoords(place.latitude, place.longitude, place.name);
+
+            weatherInfo.classList.remove("settings-open");
+        });
+
+        dropdown.appendChild(div);
+    });
+}
+
+function setWeatherIcon(code) 
+{
+
+    const weatherIcon = document.getElementById("weatherIcon");
+
+    let icon = "night-clear";
+
+    if (code === 0) {
+        icon = "sunny";
+    }
+    else if ([1, 2].includes(code)) {
+        icon = "partly-cloudy";
+    }
+    else if (code === 3) {
+        icon = "cloudy";
+    }
+    else if (code >= 51 && code <= 67) {
+        icon = "rain";
+    }
+    else if (code >= 80) {
+        icon = "thunderstorm";
+    }
+
+    weatherIcon.style.content =
+        `url("chrome://browser/skin/weather/${icon}.svg")`;
+}
  
-function renderWallpaperSlots() {
+function renderWallpaperSlots() 
+{   
     const slotEls = document.querySelectorAll('.slot');
  
     slotEls.forEach((el, index) => {
         const slot = wallpaperSlots[index];
  
         if (slot) { // Se tiver index(wallpaper), renderiza. Se não, deixa vazio
-            el.style.backgroundImage = `url(${slot.data})`;
+            el.style.backgroundImage = `url(${slot.data})`; 
+            el.style.backgroundSize = 'cover';
             el.classList.remove('empty');
         } else {
             el.style.backgroundImage = '';
@@ -331,7 +429,8 @@ function bindSlotClicks() { // Adiciona evento de click em cada slot para escolh
     });
 }
 
-function compressImage(file, callback) { 
+function compressImage(file, callback) 
+{ 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d'); // Contexto para desenhar a imagem no canvas e depois extrair o base64 comprimido
     const img = new Image();
@@ -352,7 +451,8 @@ function compressImage(file, callback) {
     img.src = URL.createObjectURL(file);
 }
 
-async function saveWallpaper(wallpaper) {
+async function saveWallpaper(wallpaper) 
+{
     wallpaperSlots = [wallpaper, ...wallpaperSlots].slice(0, 3); // Slice faz com que só tenha 3 wallpapers, removendo o mais antigo se passar disso
     await chrome.storage.local.set({ wallpapers: wallpaperSlots }); // Salva o WALLPAPER na cache
     renderWallpaperSlots();
@@ -364,14 +464,14 @@ async function loadStreams()
 {
     try {
         console.time('Tempo de Resposta');
-        const response = await fetch("https://holo-streams.migueloliv-dev.workers.dev/v2/youtube");
-        const twitchRes = await fetch("https://holo-streams.migueloliv-dev.workers.dev/v2/twitch");
+        const response = await fetch("https://namastream.migueloliv-dev.workers.dev/v2/youtube");
+        const twitchRes = await fetch("https://namastream.migueloliv-dev.workers.dev/v2/twitch");
         console.timeEnd('Tempo de Resposta');
 
         const videosResponse = await response.json();
         const twitchResponse = await twitchRes.json();
         const data = await filterStreams(videosResponse, twitchResponse);
-        renderUIs(data.HappeningStreams, data.ScheduledStreams, data.TwitchStreams);
+        renderStreams(data.HappeningStreams, data.ScheduledStreams, data.TwitchStreams);
         drag(youtube);
         drag(agenda);
         drag(twitch);
@@ -379,6 +479,117 @@ async function loadStreams()
         console.error("Erro ao carregar streams:", err);
     }
 }
+
+async function initWeather() {
+
+    const saved = await chrome.storage.local.get([
+        "weatherMode",
+        "lat",
+        "lon",
+        "name"
+    ]);
+
+    if (saved.weatherMode === "manual" && saved.lat && saved.lon) {
+        fetchWeatherFromCoords(saved.lat, saved.lon, saved.name);
+    } else {
+        fetchWeather();
+    }
+}
+
+async function fetchWeather() 
+{
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        fetchWeatherFromCoords(lat, lon);
+    });
+}
+
+async function fetchWeatherFromCoords(lat, lon, manualName = null) {
+
+    const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`);
+
+    const weatherData = await weatherResponse.json();
+
+    let geoData = null;
+
+    if (!manualName) { // Só busca bairro/cidade automaticamente se NÃO tiver posto um nome manualmente
+        const geoResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+        geoData = await geoResponse.json();
+    }
+
+    const cityName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.municipality || geoData.address.county || "Unknown";
+
+    renderWeather(weatherData, geoData, cityName);
+}
+
+weatherMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+    weatherInfo.classList.toggle("settings-open");
+});
+
+document.getElementById("changeCity").addEventListener("click", async () => {
+    const newCity = document.getElementById("weatherLocationInput").value;
+
+    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(newCity)}`);
+    const data = await response.json();
+    const result = data.results?.[0];
+
+    if (!result) return;
+
+    const lat = result.latitude;
+    const lon = result.longitude;
+    const name = result.name;
+
+    // salva estado manual
+    chrome.storage.local.set({
+        weatherMode: "manual",
+        lat,
+        lon,
+        name
+    });
+
+    fetchWeatherFromCoords(lat, lon, name);
+});
+
+document.getElementById("weatherCloseSettings").addEventListener("click", () => {
+        weatherInfo.classList.remove("settings-open");
+});
+
+input.addEventListener("input", () => {
+
+    clearTimeout(debounceTimeout);
+
+    debounceTimeout = setTimeout(async () => {
+
+        const query = input.value.trim();
+
+        if (!query) {
+            dropdown.innerHTML = "";
+            return;
+        }
+
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5`);
+        const data = await res.json();
+
+        renderDropdown(data.results || []);
+    }, 300);
+});
+
+document.getElementById("weatherAuto").addEventListener("click", () => {
+    document.getElementById("weatherLocationInput").value = "";
+    weatherInfo.classList.remove("settings-open");
+
+    chrome.storage.local.set({
+        weatherMode: "auto",
+        lat: null,
+        lon: null,
+        name: null
+    });
+
+    fetchWeather();
+});
  
 document.getElementById('url-btn').addEventListener('click', async () => {
     const url = document.getElementById('url-input').value.trim();
@@ -427,6 +638,7 @@ document.getElementById('wallpaper-close').addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', async () => {
 
     loadStreams();
+    initWeather();
 
     const wallpaperCache = await chrome.storage.local.get('wallpapers');
     wallpaperSlots = wallpaperCache.wallpapers || [];

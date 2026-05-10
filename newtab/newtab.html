@@ -10,11 +10,43 @@
 </head>
 <body>
     <main>
-        <div class="weather"> 
-            <div class="weather-bar">
-                <a class="weatherinfo">
-                    <div class="weatherIconCol"> <span class="weatherIcon"></span></div>
+        <div id="weather"> 
+            <div id="weather-bar">
+                <a id="weatherinfo">
+
+                    <div id="weatherIconCol"> 
+                        <span id="weatherIcon"></span>
+                    </div>
+
+                    <div id="weatherText">
+                        <span id="weatherTemp"></span>
+                        <span id="weatherLocation"></span>
+
+                        <div id="weatherExtra">
+                            <span id="weatherFeels"></span>
+                            <span id="weatherHumidity"></span>
+                            <span id="weatherWind"></span>
+                        </div>
+                    </div>
+
+                    <div id="weatherSettings">
+                        <div id="weatherSettingsHeader">
+                            <span>Location</span>
+                            <button id="weatherCloseSettings"> X </button>
+                        </div>
+
+                        <input id="weatherLocationInput" type="text" placeholder="Wrong place?"/>
+                        <div id="weatherDropdown"></div>
+                        
+                        <div id="weatherSettingsActions">
+                            <button id="changeCity"> Save </button>
+                            <button id="weatherAuto"> Auto </button>
+                        </div>
+                    </div>
+
+                    <button id="weatherMenu" style="background-color: transparent; color: white; font-size: 26px;"> ⋮ </button>
                 </a>
+
             </div> 
         </div>
 
