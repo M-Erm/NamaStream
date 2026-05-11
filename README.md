@@ -75,6 +75,8 @@ Scrollable Bars
 - Geo-Meteor API (Weather)
 - Resizable Bar Option
 - Movable Bar Option
+- Bug fixes
+- Popup changes and fixes
 
 ## Stack
 

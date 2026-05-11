@@ -328,10 +328,24 @@ main {
 
 #bars {
     display: flex;
+    position: relative;
+    cursor: move;
     align-items: end;
     flex-direction: column;
     width: 100%;
     margin-top: 50px;
+}
+
+#bars.fixed {
+    position: sticky;
+    z-index: 10;
+}
+
+#bars.resizable .info-bar {
+    resize: both;
+    overflow: auto;   
+    min-height: 120px;
+    max-height: 400px;
 }
 
 .info-bar {
@@ -350,6 +364,7 @@ main {
     gap: 15px;
     overflow-x: scroll;
     scrollbar-width: none;
+    scroll-behavior: smooth;
     cursor: grab;
     box-sizing: border-box;
 }
@@ -388,6 +403,9 @@ main {
 
     text-decoration: none;
     color: rgb(215, 230, 228);
+
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .channelname {

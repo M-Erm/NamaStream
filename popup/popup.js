@@ -161,11 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPage('view-default');
 
     chrome.storage.local.get(['layout-vertical-twitch', 'layout-firefox-logo', 'layout-firefox-wordmark', 'layout-search-bar', 'layout-fixed-bar', 'layout-resizable-bar'], (result) => {
-        document.getElementById('layout-firefox-logo').checked = result['layout-firefox-logo'] || false;
-        document.getElementById('layout-firefox-wordmark').checked = result['layout-firefox-wordmark'] || false;
-        document.getElementById('layout-search-bar').checked = result['layout-search-bar'] || false;
+        document.getElementById('layout-firefox-logo').checked = result['layout-firefox-logo'] ?? true;
+        document.getElementById('layout-firefox-wordmark').checked = result['layout-firefox-wordmark'] ?? true;
+        document.getElementById('layout-search-bar').checked = result['layout-search-bar'] ?? true;
         document.getElementById('layout-vertical-twitch').checked = result['layout-vertical-twitch'] || false;
-        document.getElementById('layout-fixed-bar').checked = result['layout-fixed-bar'] || false;
+        document.getElementById('layout-fixed-bar').checked = result['layout-fixed-bar'] ?? true;
         document.getElementById('layout-resizable-bar').checked = result['layout-resizable-bar'] || false;
     });
 
@@ -175,4 +175,5 @@ document.addEventListener('DOMContentLoaded', () => {
         renderChannelGrid();
         changeLayoutPreview();
     });
+    
 });

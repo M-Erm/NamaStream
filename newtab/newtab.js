@@ -13,10 +13,13 @@ const dropdown = document.getElementById("weatherDropdown");
 let debounceTimeout;
 
 const search_bar = document.getElementById('search-bar').querySelector('input'); // Para desabilitar/habilitar
+const barsSection = document.getElementById('bars');
 
-const youtube = document.getElementById('youtube').querySelector('.scroll-container'); //Precisa do queryselector para pegar a div interna
-const agenda = document.getElementById('agenda').querySelector('.scroll-container'); // Para rolagem
+const youtube = document.getElementById('youtube').querySelector('.scroll-container'); // Pega o ID específico, não o scroll
+const agenda = document.getElementById('agenda').querySelector('.scroll-container');
 const twitch = document.getElementById('twitch').querySelector('.scroll-container');
+
+const lives = document.querySelectorAll('.live');
 
 const weatherMap = {
   0: "☀️ Céu limpo",
@@ -60,22 +63,22 @@ const lang = translations[userLanguage] || translations['en'];
 let wallpaperSlots = [];
 let pendingFile = null;
 
-function drag(scrollContainer) 
+function makeDraggable(bar) 
 {
     let isDragging = false;
     let hasDragged = false;
     let scrollStart = 0;
     let startPos = 0;
 
-    scrollContainer.addEventListener('mousedown', (click) => {
+    bar.addEventListener('mousedown', (click) => {
         isDragging = true;
         hasDragged = false;
         click.preventDefault();
 
         startPos = click.pageX;
-        scrollStart = scrollContainer.scrollLeft;
-        scrollContainer.style.cursor = 'grabbing';
-        scrollContainer.style.scrollSnapType = 'none';
+        scrollStart = bar.scrollLeft;
+        bar.style.cursor = 'grabbing';
+        bar.style.scrollSnapType = 'none';
     });
 
     document.addEventListener('mousemove', (click) => {
@@ -84,30 +87,89 @@ function drag(scrollContainer)
 
         const dragDistance  = click.pageX - startPos;
         if (Math.abs(dragDistance) > 5) hasDragged = true;
-        scrollContainer.scrollLeft = scrollStart - dragDistance;
+        bar.scrollLeft = scrollStart - dragDistance;
     });
 
     document.addEventListener('mouseup', () => {
+        if (!isDragging) return;
         isDragging = false;
-        scrollContainer.style.cursor = 'grab';
-        scrollContainer.style.scrollSnapType = '';
+
+        bar.style.cursor = 'grab';
+        bar.style.scrollSnapType = '';
+        snapLiveEls(bar)
     });
 
-    scrollContainer.addEventListener('click', (click) => {
+    bar.addEventListener('click', (click) => {
         if (hasDragged) {
             click.stopPropagation();
             click.preventDefault();
         }
     }, true); 
 
-    scrollContainer.addEventListener('wheel', (click) => {
+    bar.addEventListener('wheel', (click) => {
         click.preventDefault();
         
         const itemWidth = 215;
         const direction = click.deltaY > 0 ? 1 : -1;
         
-        scrollContainer.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
+        bar.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
     }, { passive: false });
+}
+
+function snapLiveEls(bar) {
+
+    let closest;
+    let closestDistance;
+
+    lives.forEach(live => {
+        const distance = Math.abs(bar.scrollLeft - live.offsetLeft);
+
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closest = live;
+        }
+    });
+
+    if (closest) {
+        bar.scrollTo( { left: closest.offsetLeft, behavior: 'smooth' });
+    }
+}
+
+function makeMovable(el) {
+    if (barsSection.classList.contains('fixed')) return;
+
+    let isMoving;
+    let startMouseX;
+    let startElX = 0;
+    let currentX = 0;
+
+    el.addEventListener('mousedown', (click) => {
+        isMoving = true;
+        click.preventDefault();
+        el.style.cursor = 'grabbing';
+
+        startMouseX = click.clientX;
+        startElX = el.getBoundingClientRect().left;
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (!isMoving) return;
+
+        const distance = event.clientX - startMouseX;
+
+        el.style.transform = `translateX(${currentX + distance}px)`;
+    });
+
+    document.addEventListener('mouseup', (event) => {
+        if (!isMoving) return;
+        isMoving = false;
+
+        const distance = event.clientX - startMouseX;
+        currentX += distance;
+    });
+}
+
+function snapBarSections() {
 
 }
 
@@ -172,8 +234,6 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
     let agendaHTML = '';
     let twitchHTML = '';
 
-
-
     chrome.storage.local.get(['layout-firefox-logo', 'layout-firefox-wordmark', 'layout-search-bar'], (result) => {
         firefox_logo.classList.toggle('hidden', result['layout-firefox-logo'] === false);
         firefox_wordmark.classList.toggle('hidden', result['layout-firefox-wordmark'] === false);
@@ -214,7 +274,7 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
             youtubeHTML += `
                 <div class="live"> 
                     <a href="https://www.youtube.com/watch?v=${stream.id}" target="_blank" class="live-thumb">
-                        <img src="${stream.snippet.thumbnails.maxres?.url || stream.snippet.thumbnails.high.url} " alt="Channel Pfp"> 
+                        <img src="${stream.snippet.thumbnails.maxres?.url ?? stream.snippet.thumbnails.high.url} " alt="Channel Pfp"> 
                     </a>
                     <div class="live-info">
                         <div>
@@ -265,7 +325,7 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
             agendaHTML += `
                 <div class="live"> 
                     <a href="https://www.youtube.com/watch?v=${stream.id}" target="_blank" class="live-thumb">
-                        <img src="${stream.snippet.thumbnails.maxres.url ?? stream.snippet.thumbnails.default}" alt="Channel Pfp"> 
+                        <img src="${stream.snippet.thumbnails.maxres.url ?? stream.snippet.thumbnails.high.url}" alt="Channel Pfp"> 
                     </a>
                     <div class="live-info">
                         <div>
@@ -472,9 +532,10 @@ async function loadStreams()
         const twitchResponse = await twitchRes.json();
         const data = await filterStreams(videosResponse, twitchResponse);
         renderStreams(data.HappeningStreams, data.ScheduledStreams, data.TwitchStreams);
-        drag(youtube);
-        drag(agenda);
-        drag(twitch);
+        makeDraggable(youtube);
+        makeDraggable(agenda);
+        makeDraggable(twitch);
+        
     } catch (err) {
         console.error("Erro ao carregar streams:", err);
     }
@@ -613,7 +674,7 @@ document.getElementById('wallpaper-popup').addEventListener('click', (e) => { //
         e.currentTarget.classList.add('hidden');
     }
 });
- 
+
 document.getElementById('file-set-btn').addEventListener('click', () => {
     if (!pendingFile) return;
  
@@ -654,6 +715,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             `url(${wallpaperSlots[0].data})`
         );
     }
+
+    chrome.storage.local.get(['layout-fixed-bar', 'layout-resizable-bar'], (result) => {
+        barsSection.classList.toggle('fixed', result['layout-fixed-bar']     === true);
+        barsSection.classList.toggle('resizable', result['layout-resizable-bar'] === true);
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') return;
+    
+        if (changes['layout-fixed-bar']) {
+            barsSection.classList.toggle('fixed', changes['layout-fixed-bar'].newValue === true);
+            if (changes['layout-fixed-bar'].newValue === false) {
+                bars.forEach(bar => makeMovable(bar))
+            }
+        }
+
+        if (changes['layout-resizable-bar']) {
+            barsSection.classList.toggle('resizable', changes['layout-resizable-bar'].newValue === true);
+
+            if (changes['layout-resizable-bar'].newValue === false) {
+                document.querySelectorAll('.info-bar').forEach(bar => {
+                    bar.style.width = '';
+                    bar.style.height = '';
+                });
+            }
+        }
+    });
 
     renderWallpaperSlots();
     bindSlotClicks();
