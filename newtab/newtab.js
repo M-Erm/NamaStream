@@ -19,7 +19,21 @@ const youtube = document.getElementById('youtube').querySelector('.scroll-contai
 const agenda = document.getElementById('agenda').querySelector('.scroll-container');
 const twitch = document.getElementById('twitch').querySelector('.scroll-container');
 
-const lives = document.querySelectorAll('.live');
+const DEFAULT_SETTINGS = {
+    'layout-firefox-logo': true,
+    'layout-firefox-wordmark': true,
+    'layout-search-bar': true,
+
+    'youtube-streams': true,
+    'agenda': true,
+    'twitch-streams': true,
+
+    'layout-resizable-bar': false,
+    'repositionMode': false,
+
+    'barPositions': {},
+    'barSizes': {}
+};
 
 const weatherMap = {
   0: "☀️ Céu limpo",
@@ -63,114 +77,137 @@ const lang = translations[userLanguage] || translations['en'];
 let wallpaperSlots = [];
 let pendingFile = null;
 
-function makeDraggable(bar) 
-{
+function makeDraggable(bar) {
     let isDragging = false;
     let hasDragged = false;
     let scrollStart = 0;
     let startPos = 0;
+ 
+    bar.addEventListener('mousedown', (e) => {
+        if (document.body.classList.contains('reposition-mode')) return;
 
-    bar.addEventListener('mousedown', (click) => {
         isDragging = true;
         hasDragged = false;
-        click.preventDefault();
-
-        startPos = click.pageX;
+        e.preventDefault();
+        startPos = e.pageX;
         scrollStart = bar.scrollLeft;
         bar.style.cursor = 'grabbing';
         bar.style.scrollSnapType = 'none';
     });
-
-    document.addEventListener('mousemove', (click) => {
+ 
+    document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
-        click.preventDefault();
 
-        const dragDistance  = click.pageX - startPos;
-        if (Math.abs(dragDistance) > 5) hasDragged = true;
-        bar.scrollLeft = scrollStart - dragDistance;
+        e.preventDefault();
+        const dist = e.pageX - startPos;
+        if (Math.abs(dist) > 5) hasDragged = true;
+        bar.scrollLeft = scrollStart - dist;
     });
-
+ 
     document.addEventListener('mouseup', () => {
         if (!isDragging) return;
-        isDragging = false;
 
+        isDragging = false;
         bar.style.cursor = 'grab';
         bar.style.scrollSnapType = '';
-        snapLiveEls(bar)
     });
 
-    bar.addEventListener('click', (click) => {
+    bar.addEventListener('scrollend', () => snapLiveEls(bar));
+ 
+    bar.addEventListener('click', (e) => {
         if (hasDragged) {
-            click.stopPropagation();
-            click.preventDefault();
+            e.stopPropagation();
+            e.preventDefault();
         }
-    }, true); 
-
-    bar.addEventListener('wheel', (click) => {
-        click.preventDefault();
-        
-        const itemWidth = 215;
-        const direction = click.deltaY > 0 ? 1 : -1;
-        
-        bar.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
+    }, true);
+ 
+    bar.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const direction = e.deltaY > 0 ? 1 : -1;
+        bar.scrollBy({ left: direction * 215, behavior: 'smooth' });
     }, { passive: false });
 }
 
 function snapLiveEls(bar) {
-
-    let closest;
-    let closestDistance;
-
+    const lives = bar.querySelectorAll('.live');
+    const barRect = bar.getBoundingClientRect();
+ 
+    let closestLeft = 0;
+    let closestDistance = Infinity;
+ 
     lives.forEach(live => {
-        const distance = Math.abs(bar.scrollLeft - live.offsetLeft);
 
+        const liveLeft = live.getBoundingClientRect().left - barRect.left + bar.scrollLeft;
+        const distance = Math.abs(bar.scrollLeft - liveLeft);
+ 
         if (distance < closestDistance) {
             closestDistance = distance;
-            closest = live;
+            closestLeft = liveLeft;
         }
     });
-
-    if (closest) {
-        bar.scrollTo( { left: closest.offsetLeft, behavior: 'smooth' });
+ 
+    if (closestDistance < Infinity) {
+        bar.scrollTo({ left: closestLeft, behavior: 'smooth' });
     }
 }
 
 function makeMovable(el) {
-    if (barsSection.classList.contains('fixed')) return;
-
-    let isMoving;
-    let startMouseX;
-    let startElX = 0;
-    let currentX = 0;
-
-    el.addEventListener('mousedown', (click) => {
+    let isMoving = false;
+    let startMouseX = 0;
+    let startMouseY = 0;
+ 
+    if (!el.dataset.posX) el.dataset.posX = '0';
+    if (!el.dataset.posY) el.dataset.posY = '0';
+ 
+    el.addEventListener('mousedown', (e) => {
+        if (!document.body.classList.contains('reposition-mode')) return;
+        if (!e.target.closest('.bar-handle')) return; // deixa makeDraggable cuidar
+ 
         isMoving = true;
-        click.preventDefault();
+        e.preventDefault();
+        e.stopPropagation();
         el.style.cursor = 'grabbing';
-
-        startMouseX = click.clientX;
-        startElX = el.getBoundingClientRect().left;
+        startMouseX = e.clientX;
+        startMouseY = e.clientY;
     });
-
-    document.addEventListener('mousemove', (event) => {
+ 
+    document.addEventListener('mousemove', (e) => {
         if (!isMoving) return;
-
-        const distance = event.clientX - startMouseX;
-
-        el.style.transform = `translateX(${currentX + distance}px)`;
+        const x = parseFloat(el.dataset.posX) + (e.clientX - startMouseX);
+        const y = parseFloat(el.dataset.posY) + (e.clientY - startMouseY);
+        el.style.transform = `translate(${x}px, ${y}px)`;
     });
-
-    document.addEventListener('mouseup', (event) => {
+ 
+    document.addEventListener('mouseup', (e) => {
         if (!isMoving) return;
         isMoving = false;
+        el.style.cursor = 'grab';
 
-        const distance = event.clientX - startMouseX;
-        currentX += distance;
+        const elX = parseFloat(el.dataset.posX) + (e.clientX - startMouseX);
+
+        const elY = parseFloat(el.dataset.posY) + (e.clientY - startMouseY);
+ 
+        el.dataset.posX = String(elX);
+        el.dataset.posY = String(elY);
+ 
+        snapBarSections(el);
+        saveBarPosition(el.id, elX, elY);
     });
 }
-
-function snapBarSections() {
-
+ 
+function snapBarSections(movedBar) {
+    const rectMoved = movedBar.getBoundingClientRect();
+ 
+    document.querySelectorAll('.info-bar').forEach(other => {
+        if (other === movedBar) return;
+ 
+        const vertDifference = rectMoved.top - other.getBoundingClientRect().top;
+ 
+        if (Math.abs(vertDifference) < 20) {
+            movedBar.dataset.posY = String(parseFloat(movedBar.dataset.posY) - vertDifference);
+            movedBar.style.transform = `translate(${movedBar.dataset.posX}px, ${movedBar.dataset.posY}px)`;
+        }
+    });
 }
 
 async function filterStreams(videosResponse, twitchResponse)
@@ -233,41 +270,6 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
     let youtubeHTML = '';
     let agendaHTML = '';
     let twitchHTML = '';
-
-    chrome.storage.local.get(['layout-firefox-logo', 'layout-firefox-wordmark', 'layout-search-bar'], (result) => {
-        firefox_logo.classList.toggle('hidden', result['layout-firefox-logo'] === false);
-        firefox_wordmark.classList.toggle('hidden', result['layout-firefox-wordmark'] === false);
-        search_bar.classList.toggle( 'hidden', result['layout-search-bar'] === false);
-    });
-
-    chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local') {
-        if (changes['layout-firefox-logo']) {
-            firefox_logo.classList.toggle('hidden', changes['layout-firefox-logo'].newValue === false);
-        } else if (changes['layout-firefox-wordmark']) {
-            firefox_wordmark.classList.toggle('hidden', changes['layout-firefox-wordmark'].newValue === false);
-        } else if (changes['layout-search-bar']) {
-            search_bar.classList.toggle('hidden', changes['layout-search-bar'].newValue === false);
-        }
-    }});
-
-    chrome.storage.local.get(['agenda', 'youtube-streams', 'twitch-streams'], (result) => {
-        bars[0].classList.toggle('hidden', result['youtube-streams'] === false);
-        bars[1].classList.toggle('hidden', result['agenda'] === false);
-        bars[2].classList.toggle('hidden', result['twitch-streams'] === false);
-    });
-
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === 'local') {
-            if (changes['youtube-streams']) {
-                bars[0].classList.toggle('hidden', changes['youtube-streams'].newValue === false);
-            } else if (changes['agenda']) {
-                bars[1].classList.toggle('hidden', changes['agenda'].newValue === false);
-            } else if (changes['twitch-streams']) {
-                bars[2].classList.toggle('hidden', changes['twitch-streams'].newValue === false);
-            }
-        }
-    });
 
     HappeningStreams.forEach(stream => {
         try {
@@ -585,6 +587,84 @@ async function fetchWeatherFromCoords(lat, lon, manualName = null) {
     renderWeather(weatherData, geoData, cityName);
 }
 
+async function getUISettings() {
+    const result =
+        await chrome.storage.local.get(
+            Object.keys(DEFAULT_SETTINGS)
+        );
+
+    return {
+        ...DEFAULT_SETTINGS,
+        ...result
+    };
+}
+
+function applyUISettings(settings) {
+
+    firefox_logo.classList.toggle(
+        'hidden',
+        !settings['layout-firefox-logo']
+    );
+
+    firefox_wordmark.classList.toggle(
+        'hidden',
+        !settings['layout-firefox-wordmark']
+    );
+
+    search_bar.classList.toggle(
+        'hidden',
+        !settings['layout-search-bar']
+    );
+
+    bars[0].classList.toggle(
+        'hidden',
+        !settings['youtube-streams']
+    );
+
+    bars[1].classList.toggle(
+        'hidden',
+        !settings['agenda']
+    );
+
+    bars[2].classList.toggle(
+        'hidden',
+        !settings['twitch-streams']
+    );
+
+    document.body.classList.toggle(
+        'reposition-mode',
+        settings.repositionMode 
+    );
+}
+
+async function saveBarPosition(id, x, y) {
+
+    const result = await chrome.storage.local.get('barPositions');
+
+    const barPositions = result.barPositions || {};
+
+    barPositions[id] = { x, y };
+
+    await chrome.storage.local.set({
+        barPositions
+    });
+}
+
+async function restoreBarPositions() {
+    const result = await chrome.storage.local.get('barPositions');
+    const barPositions = result.barPositions || {};
+
+    document.querySelectorAll('.info-bar').forEach(el => {
+        const pos = barPositions[el.id];
+        if (!pos) return;
+
+        el.dataset.posX = pos.x;
+        el.dataset.posY = pos.y;
+
+        el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+    });
+}
+
 weatherMenu.addEventListener("click", (e) => {
     e.stopPropagation();
     weatherInfo.classList.toggle("settings-open");
@@ -696,10 +776,22 @@ document.getElementById('wallpaper-close').addEventListener('click', () => {
     document.getElementById('wallpaper-popup').classList.add('hidden');
 });
 
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+
+    if (changes.repositionMode) {
+        document.body.classList.toggle( 'reposition-mode', changes.repositionMode.newValue );
+    }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
 
     loadStreams();
+    const settings = await getUISettings();
+    applyUISettings(settings);
+    bars.forEach(bar => makeMovable(bar));
     initWeather();
+    await restoreBarPositions();
 
     const wallpaperCache = await chrome.storage.local.get('wallpapers');
     wallpaperSlots = wallpaperCache.wallpapers || [];
@@ -716,30 +808,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
-    chrome.storage.local.get(['layout-fixed-bar', 'layout-resizable-bar'], (result) => {
-        barsSection.classList.toggle('fixed', result['layout-fixed-bar']     === true);
-        barsSection.classList.toggle('resizable', result['layout-resizable-bar'] === true);
-    });
-
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area !== 'local') return;
-    
-        if (changes['layout-fixed-bar']) {
-            barsSection.classList.toggle('fixed', changes['layout-fixed-bar'].newValue === true);
-            if (changes['layout-fixed-bar'].newValue === false) {
-                bars.forEach(bar => makeMovable(bar))
-            }
-        }
 
-        if (changes['layout-resizable-bar']) {
-            barsSection.classList.toggle('resizable', changes['layout-resizable-bar'].newValue === true);
-
-            if (changes['layout-resizable-bar'].newValue === false) {
-                document.querySelectorAll('.info-bar').forEach(bar => {
-                    bar.style.width = '';
-                    bar.style.height = '';
-                });
-            }
+        getUISettings().then(applyUISettings);
+        if (changes.barPositions) restoreBarPositions();
+        if (changes.barSizes) {
+            document.querySelectorAll('.info-bar').forEach(el => {
+                el.style.width = '';
+                el.style.height = '';
+            });
         }
     });
 

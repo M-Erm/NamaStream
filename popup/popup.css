@@ -8,9 +8,8 @@
     --accent-border: rgba(255, 255, 255, 0.35);
     --buttonSel:       #070608;
     --buttonSel-2:     #181818;
-    --text:          #e4e4f0;
+    --text:          #ffffff;
     --text-dim:      #6b6b8a;
-    --pin-color:     #fbbf24;
     --radius:        8px;
 }
 
@@ -18,8 +17,9 @@ body {
     width: 300px;
     background: #000000;
     color: var(--text);
-    font-size: 13px;
+    font-size: 14px;
     user-select: none;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #popup-content {
@@ -70,7 +70,7 @@ body {
 .action-buttons { display: flex; flex-direction: column; gap: 6px; }
 
 .action-btn {
-    background: var(--buttonSel);
+    background-color: var(--buttonSel);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: var(--radius);
     color: var(--text);
@@ -82,7 +82,7 @@ body {
 }
 
 .action-btn:hover {
-    background: var(--buttonSel-2);
+    background-color: var(--buttonSel-2);
     border-color: var(rgba(28, 3, 37, 0.507));
 } 
 
@@ -90,7 +90,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--buttonSel);
+    background-color: var(--buttonSel);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: var(--radius);
     padding: 9px 12px;
@@ -110,7 +110,7 @@ body {
 .toggle-track {
     width: 36px;
     height: 20px;
-    background: var(--buttonSel-2);
+    background-color: var(--buttonSel-2);
     border-radius: 99px;
     border: 1px solid rgba(255,255,255,0.1);
     display: flex;
@@ -121,7 +121,7 @@ body {
 .toggle-thumb {
     width: 14px;
     height: 14px;
-    background: var(--text-dim);
+    background-color: var(--text-dim);
     border-radius: 50%;
 }
 
@@ -131,7 +131,7 @@ body {
 
 .divider {
     height: 1px;
-    background: rgba(255,255,255,0.06);
+    background-color: white;
     margin: 2px 0;
 }
 
@@ -145,9 +145,40 @@ body {
     border-radius: 6px;
     cursor: pointer;
 }
-.check-row:hover { background: var(--buttonSel); } 
-.check-row input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+
+.check-row:hover { background-color: var(--buttonSel); }
+.check-row input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; }
 .check-row span { font-size: 12px; color: var(--text); }
+
+.check-row-with-reset {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+ 
+.check-row-with-reset .check-row {
+    flex: 1;
+}
+ 
+.reset-btn {
+    background-color: rgb(43, 41, 41);
+    border: 1px solid rgba(255, 198, 198, 0.226);
+    border-radius: 5px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+}
+ 
+.reset-btn:hover {
+    color: var(--text);
+    border-color: var(--accent-border);
+}
+
 
 #view-channels {
     overflow-y: auto;
@@ -194,12 +225,12 @@ body {
     padding: 8px 4px;
     border-radius: var(--radius);
     border: 1px solid rgba(255,255,255,0.06);
-    background: var(--buttonSel);
+    background-color: var(--buttonSel);
     cursor: pointer;
     position: relative;
 }
 
-.channel-card:hover { background: var(--buttonSel-2); border-color: var(rgba(255,255,255,0.06)); } 
+.channel-card:hover { background-color: var(--buttonSel-2); border-color: var(rgba(255,255,255,0.06)); } 
 
 .channel-card.disabled {
     opacity: 0.35;
@@ -209,26 +240,26 @@ body {
 .channel-card.placeholder { cursor: default; }
 
 .pin-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
     top: 4px;
     right: 4px;
-    background: var(--pin-color);
-    color: #000;
+    background-color: #fbbf24;
+    color: black;
     font-size: 9px;
     font-weight: 700;
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .ch-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--buttonSel-2);
+    background-color: var(--buttonSel-2);
     border: 1px solid rgba(255,255,255,0.08);
     overflow: hidden;
     flex-shrink: 0;

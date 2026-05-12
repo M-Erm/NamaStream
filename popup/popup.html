@@ -66,8 +66,14 @@
             <label class="check-row"><input type="checkbox" id="layout-firefox-wordmark" checked><span>Firefox Wordmark</span></label>
             <label class="check-row"><input type="checkbox" id="layout-search-bar" checked><span>Search Bar</span></label>
             <label class="check-row"><input type="checkbox" id="layout-vertical-twitch"><span>Vertical Twitch Bar</span></label>
-            <label class="check-row"><input type="checkbox" id="layout-fixed-bar" checked><span>Fixed Bars</span></label>
-            <label class="check-row"><input type="checkbox" id="layout-resizable-bar"><span>Resizable Bars</span></label>
+            <div class="check-row-with-reset">
+                <button class="action-btn" id="reposition-mode-btn">Reposition Bars</button>
+                <button class="reset-btn" id="reset-bar-positions">Reset pos</button>
+            </div>
+            <div class="check-row-with-reset">
+                <label class="check-row"><input type="checkbox" id="layout-resizable-bar"><span>Resizable Bars</span></label>
+                <button class="reset-btn" id="reset-bar-sizes">Reset size</button>
+            </div>
         </section>
 
     </div>

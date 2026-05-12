@@ -336,11 +336,6 @@ main {
     margin-top: 50px;
 }
 
-#bars.fixed {
-    position: sticky;
-    z-index: 10;
-}
-
 #bars.resizable .info-bar {
     resize: both;
     overflow: auto;   
@@ -350,12 +345,28 @@ main {
 
 .info-bar {
     display: flex;
+    flex-direction: column;
     border: 1px rgb(230, 49, 49) solid;
     margin-inline: 100px;
-    width: 45%; 
-    height: 190px;
+    width: 45%;
     background-color: black;
 }
+
+.reposition-mode .bar-handle {
+    display: flex;
+    pointer-events: auto;
+}
+
+.bar-handle {
+    display: none;
+    pointer-events: none;
+    height: 8px;
+    flex-shrink: 0;
+    cursor: grab;
+    background: rgba(226, 12, 12, 0.918);
+}
+
+.bar-handle:active { cursor: grabbing; }
 
 .scroll-container {
     display: flex;
