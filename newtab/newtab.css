@@ -1,6 +1,6 @@
 
 :root { /* Define a CSS variable for the wallpaper URL */
-    --wallpaper-url: url("/logo/DefaultBackground.png");
+    --wallpaper-url: url("/assets/DefaultBackground.png");
 }
 
 html, body {
@@ -287,7 +287,7 @@ main {
     display: inline-block;
     width: 64px;
     height: 64px;
-    background: image-set(url("/logo/about-logo.png")) no-repeat center; 
+    background: image-set(url("/assets/about-logo.png")) no-repeat center; 
     background-size: 64px;
 }
 
@@ -297,7 +297,7 @@ main {
     height: 64px;
     background-color: white;
 
-    mask: url("/logo/firefox-wordmark.svg") no-repeat center;
+    mask: url("/assets/firefox-wordmark.svg") no-repeat center;
     mask-size: contain;
     margin-inline-start: calc(4*0.267rem);
 }

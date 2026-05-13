@@ -59,7 +59,10 @@ const translations = {
         "in_1_minute": "in 1 minute",
         "minutes": " minutes",
         "in": "in ",
-        "starts": "Starts"
+        "starts": "Starts",
+        "feeling": "Feeling",
+        "humidity": "Humidity",
+        "wind_speed": "Wind Speed"
     },
     "pt-BR": {
         "watching_now": "Assistindo agora",
@@ -68,7 +71,10 @@ const translations = {
         "hours": " horas",
         "hour": " hora",
         "in_1_minute": "em 1 minuto",
-        "minutes": " minutos"
+        "minutes": " minutos",
+        "feeling": "Sensação",
+        "humidity": "Umidade",
+        "wind_speed": "Vento"
     }
 };
 
@@ -426,9 +432,9 @@ function renderWeather(weatherData, geoData, manualName = null)
 
     document.getElementById("weatherTemp").textContent =`${Math.round(current.temperature_2m)}°`;
     document.getElementById("weatherLocation").textContent = place;
-    document.getElementById("weatherFeels").textContent = `Sensação: ${Math.round(current.apparent_temperature)}°`;
-    document.getElementById("weatherHumidity").textContent = `Umidade: ${current.relative_humidity_2m}%`;
-    document.getElementById("weatherWind").textContent = `Vento: ${Math.round(current.wind_speed_10m)} km/h`;
+    document.getElementById("weatherFeels").textContent = `${lang.feeling}: ${Math.round(current.apparent_temperature)}°`;
+    document.getElementById("weatherHumidity").textContent = `${lang.humidity}: ${current.relative_humidity_2m}%`;
+    document.getElementById("weatherWind").textContent = `${lang.wind_speed}: ${Math.round(current.wind_speed_10m)} km/h`;
     setWeatherIcon(current.weather_code);
 }
 
@@ -588,6 +594,30 @@ async function restoreBarPositions()
         el.dataset.posY = pos.y;
 
         el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+    });
+}
+
+function saveRestoreBarSizes() {
+    const sizes = JSON.parse(localStorage.getItem('info-bar-sizes') || '{}');
+
+    document.querySelectorAll('.info-bar').forEach((bar, index) => {
+        if (sizes[index]) {        // restaura tamanho salvo
+            bar.style.width = sizes[index].width;
+            bar.style.height = sizes[index].height;
+        }
+
+        const observer = new ResizeObserver(() => {
+            const currentSizes = JSON.parse(localStorage.getItem('info-bar-sizes') || '{}');
+
+            currentSizes[index] = {
+                width: bar.style.width || `${bar.offsetWidth}px`,
+                height: bar.style.height || `${bar.offsetHeight}px`
+            };
+
+            localStorage.setItem('info-bar-sizes', JSON.stringify(currentSizes));
+        });
+
+        observer.observe(bar);
     });
 }
 
@@ -785,6 +815,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadStreams();
     initWeather();
     await restoreBarPositions();
+    saveRestoreBarSizes();
 
     const settings = await getCachedSettings();
     initCachedSettings(settings);
@@ -793,7 +824,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     wallpaperSlots = wallpaperCache.wallpapers || [];
  
     if (wallpaperSlots.length === 0) {
-        wallpaperSlots = [{ type: 'url', data: '/logo/DefaultBackground.png' }];
+        wallpaperSlots = [{ type: 'url', data: '/assets/DefaultBackground.png' }];
         await chrome.storage.local.set({ wallpapers: wallpaperSlots });
     }
 
