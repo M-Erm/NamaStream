@@ -329,27 +329,27 @@ main {
 #bars {
     display: flex;
     position: relative;
-    cursor: move;
-    align-items: end;
     flex-direction: column;
     width: 100%;
     margin-top: 50px;
 }
 
-#bars.resizable .info-bar {
-    resize: both;
-    overflow: auto;   
-    min-height: 120px;
-    max-height: 400px;
-}
-
 .info-bar {
     display: flex;
+    align-self: flex-end;
     flex-direction: column;
     border: 1px rgb(230, 49, 49) solid;
+    min-height: 185px;
     margin-inline: 100px;
     width: 45%;
     background-color: black;
+}
+
+#bars.resizable .info-bar {
+    resize: both;
+    overflow: auto;   
+    min-height: 185px;
+    max-height: 400px;
 }
 
 .reposition-mode .bar-handle {

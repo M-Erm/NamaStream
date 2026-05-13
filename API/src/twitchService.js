@@ -10,16 +10,18 @@ const channels = [
     {name: "shachimu"}, 
     {name: "dokibird"}, 
     {name: "apricot"},
-    {name: "camila"},
     {name: "cerberVT"},  
     {name: "filian"},
     {name: "kiara"},
     {name: "gigimurin"},
     {name: "FUWAMOCO"},
     {name: "michimochievee"},
-    {name: "michimochievee"},
     {name: "nyanners"},
     {name: "chibidoki"},
+    {name: "RAORA"},
+    {name: "elizabethrosebloodflame"},
+    {name: "kairyucrocodile"},
+    {name: "tokoyamitowa_holo"}
 ]
 
 let token = null;

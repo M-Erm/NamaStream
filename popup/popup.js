@@ -146,6 +146,7 @@ repositionBtn.addEventListener('click', () => {
         const next = !result.repositionMode;
         chrome.storage.local.set({ repositionMode: next });
         repositionBtn.classList.toggle('active', next);
+        repositionBtn.textContent = next ? 'Done Repositioning' : 'Reposition Bars';
     });
 });
 
@@ -178,24 +179,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('layout-resizable-bar').checked = result['layout-resizable-bar'] || false;
     });
 
+    chrome.storage.local.get(['disabledChannels', 'pinnedChannels'], (result) => {
+        disabledChannels = new Set(result.disabledChannels || []);
+        pinnedChannels = result.pinnedChannels || [];
+        renderChannelGrid();
+    });
+    
     chrome.storage.local.get('repositionMode', (result) => {
         repositionBtn.classList.toggle('active', result.repositionMode === true);
         repositionBtn.textContent = result.repositionMode ? 'Done Repositioning' : 'Reposition Bars';
     });
 
-
-    chrome.storage.local.get(['disabledChannels', 'pinnedChannels'], (result) => {
-        disabledChannels = new Set(result.disabledChannels || []);
-        pinnedChannels = result.pinnedChannels || [];
-        renderChannelGrid();
-        changeLayoutPreview();
-    });
-
     document.getElementById('reset-bar-positions').addEventListener('click', () => {
         chrome.storage.local.set({ barPositions: {} });
-    });
-
-    document.getElementById('reset-bar-sizes').addEventListener('click', () => {
-        chrome.storage.local.set({ barSizes: {} });
     });
 });

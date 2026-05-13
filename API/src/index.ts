@@ -6,7 +6,6 @@ import { Hono } from 'hono';
 import { returnYoutubeData } from './cache.js';
 import { returnTwitchData } from './cache.js';
 import { refreshCache } from './cache.js';
-import { filterStreams } from './old.js';
 
 interface Env {
   YOUTUBE_API_KEY: string;
@@ -26,23 +25,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET,OPTIONS',
   'Access-Control-Allow-Headers': '*',
 };
-
-server.get('/streams', async (context) => {
-  try {
-    const videosResponse = await returnYoutubeData(context.env);
-    const data = filterStreams(videosResponse);
-    return context.json(data, { headers: corsHeaders });
-
-  } catch (err: any) {
-    return context.json(
-      {
-        error: 'Internal Server Error',
-        message: err?.message ?? 'Unknown error',
-      },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-});
 
 server.get('/v2/youtube', async (context) => {
   try {
@@ -77,10 +59,6 @@ server.get('/v2/twitch', async (context) => {
 });
 
 // requisição options (faz automático antes/junto de um fetch) AKA preflight request
-server.options('/streams', (context) => {
-  return context.text('ok', { headers: corsHeaders });
-});
-
 server.options('/v2/youtube', (context) => {
   return context.text('ok', { headers: corsHeaders });
 });
