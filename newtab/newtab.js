@@ -84,7 +84,7 @@ const lang = translations[userLanguage] || translations['en'];
 let wallpaperSlots = [];
 let pendingFile = null;
 
-async function filterStreams(videosResponse, twitchResponse)
+async function filterStreams(youtubeData, twitchStreams)
 {
     const ScheduledStreams = [];
     const HappeningStreams = [];
@@ -92,48 +92,39 @@ async function filterStreams(videosResponse, twitchResponse)
 
     const { disabledChannels = [], pinnedChannels = [] } = await chrome.storage.local.get(['disabledChannels', 'pinnedChannels']);
 
-    for (const response of videosResponse) {
-        for (const video of response.items) {
+    for (const video of youtubeData) {
+        if (disabledChannels.includes(video.channelId)) {
+            continue;
+        }
 
-            if (disabledChannels.includes(video.snippet?.channelId)) {
-                continue;
-            }
-
-            if (!video.liveStreamingDetails) {
-                // Não for stream
-                continue;
-            }
-            else if (video.liveStreamingDetails.actualStartTime && !video.liveStreamingDetails.actualEndTime) {
-                // Tiver start mas não tiver end -> acontecendo agora
-                HappeningStreams.push(video);
-            } else if (video.liveStreamingDetails.scheduledStartTime && !video.liveStreamingDetails.actualStartTime) {
-                // tiver scheduled start mas não tiver start -> agendado
-                ScheduledStreams.push(video);
-            }
+        if (video.actualStartTime && !video.actualEndTime) { // acontecendo agora
+            HappeningStreams.push(video);
+        } else if (video.scheduledStartTime && !video.actualStartTime) { // agendado
+            ScheduledStreams.push(video);
         }
     } 
 
     // Se a tá pinado (algo diferente de -1) e b não — a vem primeiro (retorna negativo). Se b tá pinado e a não — b vem primeiro (retorna positivo). 
     ScheduledStreams.sort((a, b) => { 
-        if (pinnedChannels.indexOf(a.snippet.channelId) !== -1 && pinnedChannels.indexOf(b.snippet.channelId) === -1) {
-            return new Date(a.liveStreamingDetails.scheduledStartTime) - new Date(b.liveStreamingDetails.scheduledStartTime) - 1000000000;
-        } else if (pinnedChannels.indexOf(b.snippet.channelId) !== -1 && pinnedChannels.indexOf(a.snippet.channelId) === -1) {
-            return new Date(a.liveStreamingDetails.scheduledStartTime) - new Date(b.liveStreamingDetails.scheduledStartTime) + 1000000000;
+        if (pinnedChannels.indexOf(a.channelId) !== -1 && pinnedChannels.indexOf(b.channelId) === -1) {
+            return new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime) - 1000000000;
+        } else if (pinnedChannels.indexOf(b.channelId) !== -1 && pinnedChannels.indexOf(a.channelId) === -1) {
+            return new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime) + 1000000000;
         }
-        return new Date(a.liveStreamingDetails.scheduledStartTime) - new Date(b.liveStreamingDetails.scheduledStartTime);
+        return new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime);
     });
 
     HappeningStreams.sort((a, b) => { 
-        if (pinnedChannels.indexOf(a.snippet.channelId) !== -1 && pinnedChannels.indexOf(b.snippet.channelId) === -1) {
-            return new Date(a.liveStreamingDetails.scheduledStartTime) - new Date(b.liveStreamingDetails.scheduledStartTime) - 1000000000; 
-        } else if (pinnedChannels.indexOf(b.snippet.channelId) !== -1 && pinnedChannels.indexOf(a.snippet.channelId) === -1) {
-            return new Date(a.liveStreamingDetails.scheduledStartTime) - new Date(b.liveStreamingDetails.scheduledStartTime) + 1000000000; 
+        if (pinnedChannels.indexOf(a.channelId) !== -1 && pinnedChannels.indexOf(b.channelId) === -1) {
+            return new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime) - 1000000000; 
+        } else if (pinnedChannels.indexOf(b.channelId) !== -1 && pinnedChannels.indexOf(a.channelId) === -1) {
+            return new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime) + 1000000000; 
         }
-        return new Date(a.liveStreamingDetails.scheduledStartTime) - new Date(b.liveStreamingDetails.scheduledStartTime);
+        return new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime);
     });
 
-    for (const response of twitchResponse.data) {
-        TwitchStreams.push(response);
+    for (const stream of twitchStreams) {
+        TwitchStreams.push(stream);
     }
 
     return {ScheduledStreams, HappeningStreams, TwitchStreams};
@@ -150,15 +141,15 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
             youtubeHTML += `
                 <div class="live"> 
                     <a href="https://www.youtube.com/watch?v=${stream.id}" target="_blank" class="live-thumb">
-                        <img src="${stream.snippet.thumbnails.maxres?.url ?? stream.snippet.thumbnails.high.url} " alt="Channel Pfp"> 
+                        <img src="${stream.thumbnailMax ?? stream.thumbnailHigh} " alt="Channel Pfp"> 
                     </a>
                     <div class="live-info">
                         <div>
-                            <a target="_blank" class="streamtitle" href="https://www.youtube.com/watch?v=${stream.id}">${stream.snippet.title}</a>
+                            <a target="_blank" class="streamtitle" href="https://www.youtube.com/watch?v=${stream.id}">${stream.title}</a>
                         </div>
 
-                        <a target="_blank" class="channelname" href="https://www.youtube.com/channel/${stream.snippet.channelId}"> ${stream.snippet.channelTitle} </a>
-                        <div style="color: white">${stream.liveStreamingDetails.concurrentViewers} ${lang.watching_now} </div>
+                        <a target="_blank" class="channelname" href="https://www.youtube.com/channel/${stream.channelId}"> ${stream.channel} </a>
+                        <div style="color: white">${stream.concurrentViewers} ${lang.watching_now} </div>
                     </div>
                 </div>`
                 
@@ -173,7 +164,7 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
             let displayText;
             const localCurrentTime = new Date();
 
-            const localStreamHour = new Date(stream.liveStreamingDetails.scheduledStartTime);
+            const localStreamHour = new Date(stream.scheduledStartTime);
             const localStreamDate = localStreamHour.toLocaleDateString('pt-BR');
 
             const localStreamTimeLeftMS = localStreamHour - localCurrentTime; //Resposta em ms (número muito alto, como 1000000000)
@@ -196,19 +187,19 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
                 }
             }
 
-            const localStreamStartTime = new Date(stream.liveStreamingDetails.scheduledStartTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const localStreamStartTime = new Date(stream.scheduledStartTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
             agendaHTML += `
                 <div class="live"> 
                     <a href="https://www.youtube.com/watch?v=${stream.id}" target="_blank" class="live-thumb">
-                        <img src="${stream.snippet.thumbnails.maxres.url ?? stream.snippet.thumbnails.high.url}" alt="Channel Pfp"> 
+                        <img src="${stream.thumbnailMax ?? stream.thumbnailHigh}" alt="Channel Pfp"> 
                     </a>
                     <div class="live-info">
                         <div>
-                            <a target="_blank" class="streamtitle" href="https://www.youtube.com/watch?v=${stream.id}">${stream.snippet.title}</a>
+                            <a target="_blank" class="streamtitle" href="https://www.youtube.com/watch?v=${stream.id}">${stream.title}</a>
                         </div>
 
-                        <a target="_blank" class="channelname" href="https://www.youtube.com/channel/${stream.snippet.channelId}"> ${stream.snippet.channelTitle} </a>
+                        <a target="_blank" class="channelname" href="https://www.youtube.com/channel/${stream.channelId}"> ${stream.channel} </a>
                         <div style="color: white"> ${lang.starts} ${displayText} (${localStreamStartTime})</div>
                     </div>
                 </div>`
@@ -221,16 +212,16 @@ function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
     try {
         twitchHTML += `
             <div class="live"> 
-                <a href="https://www.twitch.tv/${stream.user_name}" target="_blank" class="live-thumb">
-                    <img src="${stream.thumbnail_url.replace("{width}", "320").replace("{height}", "180")}" alt="Channel Pfp"> 
+                <a href="https://www.twitch.tv/${stream.name}" target="_blank" class="live-thumb">
+                    <img src="${stream.thumbnail.replace("{width}", "320").replace("{height}", "180")}" alt="Channel Pfp"> 
                 </a>
                 <div class="live-info">
                     <div>
-                        <a target="_blank" class="streamtitle" href="https://www.twitch.tv/${stream.user_name}">${stream.title}</a>
+                        <a target="_blank" class="streamtitle" href="https://www.twitch.tv/${stream.name}">${stream.title}</a>
                 </div>
 
-                    <a target="_blank" class="channelname" href="https://www.twitch.tv/${stream.user_name}"> ${stream.user_name} </a>
-                    <div style="color: white">${stream.viewer_count} ${lang.watching_now} </div>
+                    <a target="_blank" class="channelname" href="https://www.twitch.tv/${stream.name}"> ${stream.name} </a>
+                    <div style="color: white">${stream.viewers} ${lang.watching_now} </div>
                 </div>
             </div>`
     } catch (err) {
@@ -651,8 +642,8 @@ async function loadStreams()
 {
     try {
         console.time('Tempo de Resposta');
-        const response = await fetch("https://namastream.migueloliv-dev.workers.dev/v2/youtube");
-        const twitchRes = await fetch("https://namastream.migueloliv-dev.workers.dev/v2/twitch");
+        const response = await fetch("http://127.0.0.1:8787/v2/youtube");
+        const twitchRes = await fetch("http://127.0.0.1:8787/v2/twitch");
         console.timeEnd('Tempo de Resposta');
 
         const videosResponse = await response.json();

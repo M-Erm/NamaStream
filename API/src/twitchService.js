@@ -77,5 +77,13 @@ export async function getTwitchStreams(Client_Id, Client_Secret, retry = true)
         return getTwitchStreams(Client_Id, Client_Secret, false);
     }
 
-    return res.json();
+    const data = await res.json();
+
+    return data.data.map(stream => ({
+        login: stream.user_login,
+        name: stream.user_name,
+        title: stream.title,
+        viewers: stream.viewer_count,
+        thumbnail: stream.thumbnail_url
+        }));
 }
