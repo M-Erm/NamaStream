@@ -3,6 +3,8 @@
 //
 
 import { Hono } from 'hono';
+import { returnOLDYoutubeData } from './cache.js';
+import { returnOLDTwitchData } from './cache.js';
 import { returnYoutubeData } from './cache.js';
 import { returnTwitchData } from './cache.js';
 import { refreshCache } from './cache.js';
@@ -28,7 +30,7 @@ const corsHeaders = {
 
 server.get('/v2/youtube', async (context) => {
   try {
-    const data = await returnYoutubeData(context.env);
+    const data = await returnOLDYoutubeData(context.env);
 
     return context.json(data ?? [], { headers: corsHeaders });
   } catch (err: any) {
@@ -43,6 +45,38 @@ server.get('/v2/youtube', async (context) => {
 });
 
 server.get('/v2/twitch', async (context) => {
+  try {
+    const data = await returnOLDTwitchData(context.env);
+
+    return context.json(data ?? [], { headers: corsHeaders });
+  } catch (err: any) {
+    return context.json(
+      {
+        error: 'Internal Server Error',
+        message: err?.message ?? 'Unknown error',
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+});
+
+server.get('/v3/youtube', async (context) => {
+  try {
+    const data = await returnYoutubeData(context.env);
+
+    return context.json(data ?? [], { headers: corsHeaders });
+  } catch (err: any) {
+    return context.json(
+      {
+        error: 'Internal Server Error',
+        message: err?.message ?? 'Unknown error',
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+});
+
+server.get('/v3/twitch', async (context) => {
   try {
     const data = await returnTwitchData(context.env);
 
@@ -64,6 +98,14 @@ server.options('/v2/youtube', (context) => {
 });
 
 server.options('/v2/twitch', (context) => {
+  return context.text('ok', { headers: corsHeaders });
+});
+
+server.options('/v3/youtube', (context) => {
+  return context.text('ok', { headers: corsHeaders });
+});
+
+server.options('/v3/twitch', (context) => {
   return context.text('ok', { headers: corsHeaders });
 });
 

@@ -42,7 +42,7 @@ const channelIDs = [
 
 const playlistIDs = channelIDs.map( ({ channelId }) => `UU${ channelId.slice(2) }`);
 
-export async function getStreams(YOUTUBE_API_KEY) 
+export async function getYoutubeStreams(YOUTUBE_API_KEY) 
 { 
   const playlistData = await getYoutubeContent(playlistIDs, YOUTUBE_API_KEY); 
   const streams = await getVideoInfo(playlistData, YOUTUBE_API_KEY); 
