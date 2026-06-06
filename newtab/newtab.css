@@ -556,7 +556,7 @@ button:hover {
 }
 
 #file-input {
-    font-size: 2rem;
+    font-size: 20rem;
     background-color: white;
 }
 
@@ -568,9 +568,32 @@ button:hover {
 }
 
 .action-btn {
+    padding: .2rem;
     inline-size: max-content;
     background-color: white;
     color: black;
+}
+
+#wallpaper-results {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 60vh;
+    background-color: rgb(39, 37, 37);
+}
+
+#wallpaper-results img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+#wallpaper-results img:hover {
+    opacity: 0.8;
 }
 
 .hidden { display: none !important }

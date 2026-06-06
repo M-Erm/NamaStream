@@ -43,6 +43,37 @@ export function bindSlotClicks()
     });
 }
 
+export async function searchWallpapers()
+{
+    const query = document.getElementById('wallpaper-search').value;
+    const results = document.getElementById('wallpaper-results');
+
+    results.innerHTML = '';
+
+    const response = await fetch(`https://namastream.migueloliv-dev.workers.dev/v3/searchwallhaven?q=${encodeURIComponent(query)}`);
+    
+    if (!response.ok) {
+        console.error('Failed to fetch wallpapers');
+        return;
+    }
+
+    const ResponseData = await response.json();
+
+    document.getElementById('modal-results').classList.remove('hidden');
+
+    ResponseData.data.forEach(wallpaper => {
+        const img = document.createElement('img');
+
+        img.src = wallpaper.thumbs.small;
+
+        img.addEventListener('click', async () => {
+            await saveWallpaper({ type: 'url', data: wallpaper.path });
+        });
+
+        results.appendChild(img);
+    });
+}
+
 export function compressImage(file, callback)
 {
     const canvas = document.createElement('canvas');

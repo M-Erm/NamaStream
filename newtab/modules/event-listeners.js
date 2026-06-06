@@ -1,6 +1,6 @@
 import { getCachedSettings, initCachedSettings } from './settings.js';
 import { fetchWeather, fetchWeatherFromCoords, renderDropdown, initWeather } from './weather.js';
-import { compressImage, saveWallpaper, renderWallpaperSlots, bindSlotClicks, updatePendingFile, pendingFile } from './wallpapers.js';
+import { compressImage, saveWallpaper, renderWallpaperSlots, bindSlotClicks, searchWallpapers , updatePendingFile, pendingFile } from './wallpapers.js';
 import { weatherInfo, weatherMenu, input, dropdown, barsSection, bars } from './dom-refs.js';
 import { lang } from './constants.js';
 
@@ -123,6 +123,11 @@ export function addEventListeners()
     });
 
     let currentPendingFile = null;
+
+    document.getElementById('wallpaper-search-btn').addEventListener('click', async () => {
+        await searchWallpapers();
+        document.getElementById('wallpaper-search-modal').classList.add('hidden');
+    });
 
     document.getElementById('file-input').addEventListener('change', (e) => {
         currentPendingFile = e.target.files[0];

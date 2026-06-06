@@ -97,16 +97,22 @@
                     <section class="section-name"> <h2> Image URL</h2> </section>
                     <div class="input-row">
                         <input type="text" id="url-input" placeholder="https://...">
-                        <button id="url-btn" class="action-btn">Set URL</button>
+                        <button id="url-btn" class="action-btn">Set Background</button>
                     </div>
                 </div>
 
-                <div class="input-group muted">
-                    <section class="section-name"> <h2> Wallpaper Site </h2> </section>
+                <div class="input-group">
+                    <section class="section-name"> <h2> Wallhaven </h2> </section>
                     <div class="input-row">
-                        <input type="text" placeholder="Integration coming soon..." disabled>
-                        <button class="action-btn" disabled>Connect</button>
+                        <input id="wallpaper-search" type="text" placeholder="Search with Wallhaven">
+                        <button id="wallpaper-search-btn" class="action-btn"> Search </button>
                     </div>
+
+                    <div id="modal-results" class="hidden">
+                        <h2 style="color: white; font-size: 1.25rem;">Results</h2>
+                        <div id="wallpaper-results" style="padding: 1vw;"></div>
+                    </div>
+
                 </div>
 
                 <div class="input-group">
@@ -116,13 +122,10 @@
 
                         <label for="file-input" class="action-btn">Choose File</label>
                         <span id="file-name" class="file-name-display">No file selected</span>
-                        <button id="file-set-btn" class="action-btn" disabled>Set</button>
+                        <button id="file-set-btn" class="action-btn">Set Background</button>
                     </div>
                 </div>
             </section>
-
-            <div id="status"></div>
-            </div>
         </div>
 
     </main>

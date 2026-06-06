@@ -18,14 +18,6 @@
 
         <section class="action-buttons">
             <button class="action-btn" data-target="view-channels" data-i18n="enable_disable_channels">Enable / Disable Channels</button>
-
-            <div class="toggle-row">
-                <span class="toggle-label" data-i18n="sort_by_gen">Sort by Gen</span>
-                <button class="toggle-btn" id="sort-by-gen" data-on="false">
-                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                </button>
-            </div>
-
             <button class="action-btn" data-target="view-layout" data-i18n="layout_options">Layout Options</button>
         </section>
 
@@ -45,25 +37,21 @@
 
         <section class="channel-section">
             <h2 class="section-label">
-                <span data-i18n="youtube_vtubers">YouTube VTubers</span>
+                <span>YouTube VTubers</span>
                 <span class="hint" data-i18n="left_right_click">
                     Left click: toggle · Right click: pin
                 </span>
             </h2>
-            <div id="yt-channel-grid" class="channel-grid">
-            </div>
+            <div id="yt-channel-grid" class="channel-grid"> </div>
         </section>
 
         <section class="channel-section">
-            <h2 class="section-label" data-i18n="twitch_vtubers">Twitch VTubers</h2>
-            <div id="tw-channel-grid" class="channel-grid">
-                <div class="channel-card disabled placeholder">
-                    <div class="ch-avatar"></div>
-                    <span class="ch-name" data-i18n="coming_soon">Coming soon</span>
-                </div>
-            </div>
+            <h2 class="section-label">
+                <span> Twitch VTubers </span>
+            </h2>
+            <div id="twitch-channel-grid" class="channel-grid"></div>
         </section>
-
+        
     </div>
 
     <div id="view-layout" class="view">

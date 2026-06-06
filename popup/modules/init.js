@@ -4,7 +4,11 @@ import { renderPage, applyTranslations, initNavigation } from './ui-navigation.j
 import { repositionBtn, initLayoutOptions } from './layout-options.js';
 import { translations, lang } from './translations.js';
 
-export async function initPopup() {
+import { youtubeIDs } from './channels-data.js';
+import { twitchChannels } from './channels-data.js'
+
+export async function initPopup() 
+{
     syncCheckboxesToStorage();
     initNavigation();
     initLayoutOptions();
@@ -29,7 +33,9 @@ export async function initPopup() {
             pinnedChannels.length = 0;
             pinnedChannels.push(...result.pinnedChannels);
         }
-        renderChannelGrid();
+        
+        renderChannelGrid(youtubeIDs, 'yt-channel-grid');
+        renderChannelGrid(twitchChannels, 'twitch-channel-grid');
     });
 
     chrome.storage.local.get('repositionMode', (result) => {

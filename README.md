@@ -41,11 +41,10 @@
 - [x] Reposition mode — drag bars freely (v1.3)
 - [x] Resizable bars (v1.3)
 - [x] Layout options — toggle logo, search bar, individual stream bars (v1.3)
-- [ ] Twitch channel disable/pin
-- [ ] Sort channels by branch/gen
+- [x] Twitch channel disable/pin (V1.3.1)
+- [x] Wallpaper Site Integration (V1.3.1)
 - [ ] Vertical Twitch bar layout
 - [ ] Optional live preview on thumbnail hover
-- [ ] Wallpaper Site Integration
 
 ## Stacks
 

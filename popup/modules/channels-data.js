@@ -1,4 +1,4 @@
-export const channelIDs = [
+export const youtubeIDs = [
   {name: "Dokibird", channelId: "UComInW10MkHJs-_vi4rHQCQ"},
   {name: "HololiveEN", channelId: "UCotXwY6s8pWmuWd_snKYjhg"},
   {name: "Pekora", channelId: "UC1DCedRgGHBdm81E1llLhOQ"},
@@ -34,3 +34,25 @@ export const channelIDs = [
   {name: "Ollie", channelId: "UCYz_5n-uDuChHtLo7My1HnQ"},
   {name: "Shachi", channelId: "UCuBEdI-24bquMoP_dACignQ"}
 ];
+
+export const twitchChannels = [
+  {name: "vedal987", channelId: "vedal987"},
+  {name: "ironmouse", channelId: "ironmouse"},
+  {name: "henyathegenius", channelId: "henyathegenius"},
+  {name: "dooby3d", channelId: "dooby3d"},
+  {name: "shachimu", channelId: "shachimu"},
+  {name: "dokibird", channelId: "dokibird"},
+  {name: "apricot", channelId: "apricot"},
+  {name: "cerberVT", channelId: "cerberVT"},  
+  {name: "filian", channelId: "filian"},
+  {name: "kiara", channelId: "kiara"},
+  {name: "gigimurin", channelId: "gigimurin"},
+  {name: "FUWAMOCO", channelId: "FUWAMOCO"},
+  {name: "michimochievee", channelId: "michimochievee"},
+  {name: "nyanners", channelId: "nyanners"},
+  {name: "chibidoki", channelId: "chibidoki"},
+  {name: "RAORA", channelId: "RAORA"},
+  {name: "elizabethrosebloodflame", channelId: "elizabethrosebloodflame"},
+  {name: "kairyucrocodile", channelId: "kairyucrocodile"},
+  {name: "tokoyamitowa_holo", channelId: "tokoyamitowa_holo"}
+]

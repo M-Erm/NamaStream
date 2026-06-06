@@ -1,14 +1,14 @@
-import { channelIDs } from './channels-data.js';
 import { translations, lang } from './translations.js';
 
 export let disabledChannels = new Set();
 export let pinnedChannels = [];
 
-export function renderChannelGrid() {
-    const grid = document.getElementById('yt-channel-grid');
+export function renderChannelGrid(ids, channelgridID) 
+{
+    const grid = document.getElementById(channelgridID);
     grid.innerHTML = '';
 
-    channelIDs.forEach(channel => {
+    ids.forEach(channel => {
         const card = document.createElement('div');
         card.className = 'channel-card';
         if (disabledChannels.has(channel.channelId)) card.classList.add('disabled');
@@ -37,11 +37,11 @@ export function renderChannelGrid() {
             } else {
                 disabledChannels.add(channel.channelId);
             }
-            renderChannelGrid();
+            renderChannelGrid(ids, channelgridID);
             chrome.storage.local.set({ disabledChannels: Array.from(disabledChannels) });
         });
 
-        card.addEventListener('contextmenu', (e) => {
+        card.addEventListener('contextmenu', (e) => { // Botão direito -> pin
             e.preventDefault();
             const idx = pinnedChannels.indexOf(channel.channelId);
             if (idx !== -1) {
@@ -49,7 +49,7 @@ export function renderChannelGrid() {
             } else {
                 pinnedChannels.push(channel.channelId);
             }
-            renderChannelGrid();
+            renderChannelGrid(ids, channelgridID);
             chrome.storage.local.set({ pinnedChannels });
         });
 
