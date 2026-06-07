@@ -24,10 +24,12 @@
 
 ### Architecture highlights
 
-- Backend on **Cloudflare Workers** (Hono + TypeScript) with a Cron Trigger that refreshes the cache every 6 minutes, decreasing cold-start (5000ms -> 500ms)
-- Chunked parallel fetching to stay within Cloudflare's simultaneous connection limit
-- Integration with 5 different APIs
+- Backend on **Cloudflare Workers** (Hono + TypeScript) with a Cron Trigger that refreshes the cache every 6 minutes, decreasing cold-start (~5000ms -> 500ms)
+- Chunked parallel fetching to stay within Cloudflare's free plan simultaneous connection limit
+- Data Normalization to reduce CPU Time (~30ms -> ~7ms)
+- Integration with 5+ different APIs
 - Client-side stream filtering and sorting, reducing server processing
+- JS Modularization -> Every feature has its own file
 
 ---
 
@@ -43,8 +45,8 @@
 - [x] Layout options — toggle logo, search bar, individual stream bars (v1.3)
 - [x] Twitch channel disable/pin (V1.3.1)
 - [x] Wallpaper Site Integration (V1.3.1)
-- [ ] Vertical Twitch bar layout
-- [ ] Optional live preview on thumbnail hover
+- [x] Vertical Twitch bar layout (v1.3.2)
+- [ ] Live preview on thumbnail hover
 
 ## Stacks
 
@@ -87,7 +89,7 @@ wrangler secret put Client_Secret
 ```bash
 # Worker dev server
 cd worker
-wrangler dev
+wrangler dev --test-scheduled
 
 # To test the Cron Trigger locally:
 curl "http://localhost:8787/__scheduled"

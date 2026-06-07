@@ -4,7 +4,7 @@ export async function filterStreams(youtubeData, twitchStreams)
     const HappeningStreams = [];
     const TwitchStreams = [];
 
-    const { disabledChannels = [], pinnedChannels = [] } = await chrome.storage.local.get(['disabledChannels', 'pinnedChannels']);
+    const { disabledChannels = [], pinnedChannels = [] } = await chrome.storage.local.get(["disabledChannels", "pinnedChannels"]);
 
     for (const video of youtubeData) {
         if (disabledChannels.includes(video.channelId)) continue;

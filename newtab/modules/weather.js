@@ -1,7 +1,5 @@
-import { weatherInfo, weatherMenu, input, dropdown } from './dom-refs.js';
-import { lang, weatherMap } from './constants.js';
-
-let debounceTimeout;
+import { weatherInfo, dropdown } from "./dom-refs.js";
+import { lang } from "./constants.js";
 
 export async function initWeather()
 {
@@ -31,23 +29,32 @@ export async function fetchWeather()
 
 export async function fetchWeatherFromCoords(lat, lon, manualName = null)
 {
+    try {
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`);
+        if (!response.ok)
+            throw new Error(`HTTP ${response.status}`)
+        
+        const weatherData = await response.json();
 
-    const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`);
+        let geoData = null;
 
-    const weatherData = await weatherResponse.json();
+        if (!manualName) {
+            const geoResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
 
-    let geoData = null;
+            if (!geoResponse.ok)
+                throw new Error(`Nominatim HTTP ${geoResponse.status}`);
+            
+            geoData = await geoResponse.json();
+        }
 
-    if (!manualName) {
-        const geoResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
-        geoData = await geoResponse.json();
-    }
-
-    if (manualName) {
-        renderWeather(weatherData, null, manualName);
-    } else {
-        const cityName = geoData?.address?.city || geoData?.address?.town || "Unknown";
-        renderWeather(weatherData, geoData, cityName);
+        if (manualName) {
+            renderWeather(weatherData, null, manualName);
+        } else {
+            const cityName = geoData?.address?.city || geoData?.address?.town || "Unknown";
+            renderWeather(weatherData, geoData, cityName);
+        }
+    } catch(err) {
+        console.log(err)
     }
 }
 
@@ -124,9 +131,4 @@ export function setWeatherIcon(code)
 
     weatherIcon.style.content =
         `url("chrome://browser/skin/weather/${icon}.svg")`;
-}
-
-export { debounceTimeout };
-export function setDebounceTimeout(value) {
-    debounceTimeout = value;
 }

@@ -1,3 +1,3 @@
-import { initPopup } from './modules/init.js';
+import { initPopup } from "./modules/init.js";
 
-document.addEventListener('DOMContentLoaded', initPopup);
+document.addEventListener("DOMContentLoaded", initPopup);

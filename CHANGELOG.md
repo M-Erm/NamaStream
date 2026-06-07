@@ -1,5 +1,16 @@
 ## Changelog
 
+### 1.3.2 (v1.32)
+- Twitch Vertical Layout
+- Youtube Iframe when hovering thumb card (min 5s hover)
+
+### 1.3.1 (v1.31)
+- JS Modularization
+- Backend: Data Normalization + Usage of Fields on Youtube API -> ~30ms -> 7ms CPU TIME
+- Backend: Versionament -> V2/V3
+- Twitch POPUP channelgrid + disable/enable channels and pin working
+- Wallhaven Integration (Through extensions backend)
+
 ### 1.3
 - Weather widget (Open-Meteo + Nominatim/OpenStreetMap)
 - Reposition mode: drag bars to any position, snap to each other, saved across sessions

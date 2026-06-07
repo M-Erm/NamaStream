@@ -1,23 +1,21 @@
-import { translations, lang } from './translations.js';
-
 export let disabledChannels = new Set();
 export let pinnedChannels = [];
 
 export function renderChannelGrid(ids, channelgridID) 
 {
     const grid = document.getElementById(channelgridID);
-    grid.innerHTML = '';
+    grid.innerHTML = "";
 
     ids.forEach(channel => {
-        const card = document.createElement('div');
-        card.className = 'channel-card';
-        if (disabledChannels.has(channel.channelId)) card.classList.add('disabled');
+        const card = document.createElement("div");
+        card.className = "channel-card";
+        if (disabledChannels.has(channel.channelId)) card.classList.add("disabled");
 
-        const avatar = document.createElement('div');
-        avatar.className = 'ch-avatar';
+        const avatar = document.createElement("div");
+        avatar.className = "ch-avatar";
 
-        const name = document.createElement('span');
-        name.className = 'ch-name';
+        const name = document.createElement("span");
+        name.className = "ch-name";
         name.textContent = channel.name;
 
         card.appendChild(avatar);
@@ -25,13 +23,13 @@ export function renderChannelGrid(ids, channelgridID)
 
         const pinIndex = pinnedChannels.indexOf(channel.channelId);
         if (pinIndex !== -1) {
-            const badge = document.createElement('span');
-            badge.className = 'pin-badge';
+            const badge = document.createElement("span");
+            badge.className = "pin-badge";
             badge.textContent = pinIndex + 1;
             card.appendChild(badge);
         }
 
-        card.addEventListener('click', () => {
+        card.addEventListener("click", () => {
             if (disabledChannels.has(channel.channelId)) {
                 disabledChannels.delete(channel.channelId);
             } else {
@@ -41,7 +39,7 @@ export function renderChannelGrid(ids, channelgridID)
             chrome.storage.local.set({ disabledChannels: Array.from(disabledChannels) });
         });
 
-        card.addEventListener('contextmenu', (e) => { // Botão direito -> pin
+        card.addEventListener("contextmenu", (e) => { // Botão direito -> pin
             e.preventDefault();
             const idx = pinnedChannels.indexOf(channel.channelId);
             if (idx !== -1) {

@@ -1,11 +1,11 @@
-import { youtube, agenda, twitch } from './dom-refs.js';
-import { lang } from './constants.js';
+import { youtube, agenda, twitch } from "./dom-refs.js";
+import { lang } from "./constants.js";
 
 export function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
 {
-    let youtubeHTML = '';
-    let agendaHTML = '';
-    let twitchHTML = '';
+    let youtubeHTML = "";
+    let agendaHTML = "";
+    let twitchHTML = "";
 
     HappeningStreams.forEach(stream => {
         try {
@@ -36,7 +36,7 @@ export function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
             const localCurrentTime = new Date();
 
             const localStreamHour = new Date(stream.scheduledStartTime);
-            const localStreamDate = localStreamHour.toLocaleDateString('pt-BR');
+            const localStreamDate = localStreamHour.toLocaleDateString("pt-BR");
 
             const localStreamTimeLeftMS = localStreamHour - localCurrentTime;
 
@@ -58,7 +58,7 @@ export function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
                 }
             }
 
-            const localStreamStartTime = new Date(stream.scheduledStartTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const localStreamStartTime = new Date(stream.scheduledStartTime).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
             agendaHTML += `
                 <div class="live">

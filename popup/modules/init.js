@@ -1,11 +1,11 @@
-import { syncCheckboxesToStorage } from './storage.js';
-import { renderChannelGrid, disabledChannels, pinnedChannels } from './channel-grid.js';
-import { renderPage, applyTranslations, initNavigation } from './ui-navigation.js';
-import { repositionBtn, initLayoutOptions } from './layout-options.js';
-import { translations, lang } from './translations.js';
+import { syncCheckboxesToStorage } from "./storage.js";
+import { renderChannelGrid, disabledChannels, pinnedChannels } from "./channel-grid.js";
+import { renderPage, applyTranslations, initNavigation } from "./ui-navigation.js";
+import { repositionBtn, initLayoutOptions } from "./layout-options.js";
+import { translations, lang } from "./translations.js";
 
-import { youtubeIDs } from './channels-data.js';
-import { twitchChannels } from './channels-data.js'
+import { youtubeIDs } from "./channels-data.js";
+import { twitchChannels } from "./channels-data.js"
 
 export async function initPopup() 
 {
@@ -13,18 +13,18 @@ export async function initPopup()
     initNavigation();
     initLayoutOptions();
 
-    renderPage('view-default');
+    renderPage("view-default");
     applyTranslations();
 
-    chrome.storage.local.get(['layout-vertical-twitch', 'layout-firefox-logo', 'layout-firefox-wordmark', 'layout-search-bar', 'layout-resizable-bar'], (result) => {
-        document.getElementById('layout-firefox-logo').checked = result['layout-firefox-logo'] ?? true;
-        document.getElementById('layout-firefox-wordmark').checked = result['layout-firefox-wordmark'] ?? true;
-        document.getElementById('layout-search-bar').checked = result['layout-search-bar'] ?? true;
-        document.getElementById('layout-vertical-twitch').checked = result['layout-vertical-twitch'] || false;
-        document.getElementById('layout-resizable-bar').checked = result['layout-resizable-bar'] || false;
+    chrome.storage.local.get(["layout-vertical-twitch", "layout-firefox-logo", "layout-firefox-wordmark", "layout-search-bar", "layout-resizable-bar"], (result) => {
+        document.getElementById("layout-firefox-logo").checked = result["layout-firefox-logo"] ?? true;
+        document.getElementById("layout-firefox-wordmark").checked = result["layout-firefox-wordmark"] ?? true;
+        document.getElementById("layout-search-bar").checked = result["layout-search-bar"] ?? true;
+        document.getElementById("layout-vertical-twitch").checked = result["layout-vertical-twitch"] || false;
+        document.getElementById("layout-resizable-bar").checked = result["layout-resizable-bar"] || false;
     });
 
-    chrome.storage.local.get(['disabledChannels', 'pinnedChannels'], (result) => {
+    chrome.storage.local.get(["disabledChannels", "pinnedChannels"], (result) => {
         if (result.disabledChannels) {
             disabledChannels.clear();
             result.disabledChannels.forEach(id => disabledChannels.add(id));
@@ -34,12 +34,12 @@ export async function initPopup()
             pinnedChannels.push(...result.pinnedChannels);
         }
         
-        renderChannelGrid(youtubeIDs, 'yt-channel-grid');
-        renderChannelGrid(twitchChannels, 'twitch-channel-grid');
+        renderChannelGrid(youtubeIDs, "yt-channel-grid");
+        renderChannelGrid(twitchChannels, "twitch-channel-grid");
     });
 
-    chrome.storage.local.get('repositionMode', (result) => {
-        repositionBtn.classList.toggle('active', result.repositionMode === true);
+    chrome.storage.local.get("repositionMode", (result) => {
+        repositionBtn.classList.toggle("active", result.repositionMode === true);
         repositionBtn.textContent = result.repositionMode ?  translations[lang]["done_repositioning"] : translations[lang]["reposition_bars"];
     });
 }

@@ -1,17 +1,18 @@
 export const DEFAULT_SETTINGS = {
-    'layout-firefox-logo': true,
-    'layout-firefox-wordmark': true,
-    'layout-search-bar': true,
+    "layout-firefox-logo": true,
+    "layout-firefox-wordmark": true,
+    "layout-search-bar": true,
 
-    'youtube-streams': true,
-    'agenda': true,
-    'twitch-streams': true,
+    "youtube-streams": true,
+    "agenda": true,
+    "twitch-streams": true,
 
-    'layout-resizable-bar': false,
-    'repositionMode': false,
+    "layout-vertical-twitch": false,
+    "layout-resizable-bar": false,
+    "repositionMode": false,
 
-    'barPositions': {},
-    'barSizes': {}
+    "barPositions": {},
+    "barSizes": {}
 };
 
 export const weatherMap = {
@@ -50,5 +51,5 @@ export const translations = {
     }
 };
 
-export const userLanguage = navigator.language || 'en';
-export const lang = translations[userLanguage] || translations['en'];
+export const userLanguage = navigator.language || "en";
+export const lang = translations[userLanguage] || translations["en"];
