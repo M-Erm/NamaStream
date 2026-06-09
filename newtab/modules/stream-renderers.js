@@ -80,25 +80,25 @@ export function renderStreams(HappeningStreams, ScheduledStreams, TwitchStreams)
     });
 
     TwitchStreams.forEach(stream => {
-    try {
-        twitchHTML += `
-            <div class="live">
-                <a href="https://www.twitch.tv/${stream.name}" target="_blank" class="live-thumb">
-                    <img src="${stream.thumbnail.replace("{width}", "320").replace("{height}", "180")}" alt="Channel Pfp">
-                </a>
-                <div class="live-info">
-                    <div>
-                        <a target="_blank" class="streamtitle" href="https://www.twitch.tv/${stream.name}">${stream.title}</a>
-                </div>
+        try {
+            twitchHTML += `
+                <div class="live">
+                    <a href="https://www.twitch.tv/${stream.name}" target="_blank" class="live-thumb">
+                        <img src="${stream.thumbnail.replace("{width}", "320").replace("{height}", "180")}" alt="Channel Pfp">
+                    </a>
+                    <div class="live-info">
+                        <div>
+                            <a target="_blank" class="streamtitle" href="https://www.twitch.tv/${stream.name}">${stream.title}</a>
+                    </div>
 
-                    <a target="_blank" class="channelname" href="https://www.twitch.tv/${stream.name}"> ${stream.name} </a>
-                    <div style="color: white">${stream.viewers} ${lang.watching_now} </div>
-                </div>
-            </div>`
-    } catch (err) {
-        console.log(err);
-    }
-})
+                        <a target="_blank" class="channelname" href="https://www.twitch.tv/${stream.name}"> ${stream.name} </a>
+                        <div style="color: white">${stream.viewers} ${lang.watching_now} </div>
+                    </div>
+                </div>`
+        } catch (err) {
+            console.log(err);
+        }
+    })
 
     youtube.innerHTML = youtubeHTML;
     agenda.innerHTML = agendaHTML;
